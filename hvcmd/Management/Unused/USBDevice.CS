@@ -1,0 +1,2812 @@
+﻿namespace LTR.HyperV.Management.ROOT.virtualization.v2 {
+    using System;
+    using System.ComponentModel;
+    using System.Management;
+    using System.Collections;
+    using System.Globalization;
+    
+    
+    // Funktionerna ShouldSerialize<PropertyName> är funktioner som används av Egenskapsgranskning i VS för att kontrollera om en viss egenskap måste serialiseras. Dessa funktioner läggs till för alla ValueType-egenskaper (egenskaper av typen Int32, BOOL m.fl. som inte kan anges till Null). Dessa funktioner använder funktionen Is<PropertyName>Null. Funktionerna används också vid implementering av TypeConverter när NULL-värde kontrolleras för egenskapen, så att ett tomt värde kan visas i Egenskapsgranskning om Dra och släpp används i Visual Studio.
+    // Funktionerna Is<PropertyName>Null() används för att kontrollera om en egenskap är NULL.
+    // Funktionerna Reset<PropertyName> läggs till för Read/Write-egenskaper som kan ha värdet NULL. Dessa funktioner används i Egenskapsgranskning i VS-designer för att ange en egenskap till NULL.
+    // Varje egenskap som läggs till i klassen för WMI-egenskaper har angivna attribut som definierar dess beteende i Visual Studio-designer, och vilken TypeConverter som ska användas.
+    // Konverteringsfunktionerna ToDateTime och ToDmtfDateTime för datum och tid läggs till för klassen så att DMTF-datum/tid kan konverteras till System.DateTime och tvärt om.
+    // En EarlyBound-klass genererades för WMI-klassen.CIM_USBDevice
+    public class USBDevice : System.ComponentModel.Component {
+        
+        // En privat egenskap som ska innehålla WMI-namnområdet där klassen finns.
+        private static string CreatedWmiNamespace = "root\\virtualization\\v2";
+        
+        // En privat egenskap som ska innehålla namnet på den WMI-klass som skapade den här klassen.
+        private static string CreatedClassName = "CIM_USBDevice";
+        
+        // En privat medlemsvariabel som ska innehålla ManagementScope som används i olika metoder.
+        private static System.Management.ManagementScope statMgmtScope = null;
+        
+        private ManagementSystemProperties PrivateSystemProperties;
+        
+        // Ett underliggande lateBound WMI-objekt.
+        private System.Management.ManagementObject PrivateLateBoundObject;
+        
+        // En medlemsvariabel som lagrar klassens automatiskt aktiverade beteende.
+        private bool AutoCommitProp;
+        
+        // En privat variabel som ska innehålla de inbäddade egenskaper som representerar instansen.
+        private System.Management.ManagementBaseObject embeddedObj;
+        
+        // Det aktuella WMI-objekt som används
+        private System.Management.ManagementBaseObject curObj;
+        
+        // En flagga som indikerar om instansen är ett inbäddat objekt.
+        private bool isEmbedded;
+        
+        // Nedan visas olika överlagringar för konstruktörer som initierar en instans för klassen med ett WMI-objekt.
+        public USBDevice() {
+            this.InitializeObject(null, null, null);
+        }
+        
+        public USBDevice(string keyCreationClassName, string keyDeviceID, string keySystemCreationClassName, string keySystemName) {
+            this.InitializeObject(null, new System.Management.ManagementPath(USBDevice.ConstructPath(keyCreationClassName, keyDeviceID, keySystemCreationClassName, keySystemName)), null);
+        }
+        
+        public USBDevice(System.Management.ManagementScope mgmtScope, string keyCreationClassName, string keyDeviceID, string keySystemCreationClassName, string keySystemName) {
+            this.InitializeObject(((System.Management.ManagementScope)(mgmtScope)), new System.Management.ManagementPath(USBDevice.ConstructPath(keyCreationClassName, keyDeviceID, keySystemCreationClassName, keySystemName)), null);
+        }
+        
+        public USBDevice(System.Management.ManagementPath path, System.Management.ObjectGetOptions getOptions) {
+            this.InitializeObject(null, path, getOptions);
+        }
+        
+        public USBDevice(System.Management.ManagementScope mgmtScope, System.Management.ManagementPath path) {
+            this.InitializeObject(mgmtScope, path, null);
+        }
+        
+        public USBDevice(System.Management.ManagementPath path) {
+            this.InitializeObject(null, path, null);
+        }
+        
+        public USBDevice(System.Management.ManagementScope mgmtScope, System.Management.ManagementPath path, System.Management.ObjectGetOptions getOptions) {
+            this.InitializeObject(mgmtScope, path, getOptions);
+        }
+        
+        public USBDevice(System.Management.ManagementObject theObject) {
+            Initialize();
+            if ((CheckIfProperClass(theObject) == true)) {
+                PrivateLateBoundObject = theObject;
+                PrivateSystemProperties = new ManagementSystemProperties(PrivateLateBoundObject);
+                curObj = PrivateLateBoundObject;
+            }
+            else {
+                throw new System.ArgumentException("Klassnamnet matchar inte.");
+            }
+        }
+        
+        public USBDevice(System.Management.ManagementBaseObject theObject) {
+            Initialize();
+            if ((CheckIfProperClass(theObject) == true)) {
+                embeddedObj = theObject;
+                PrivateSystemProperties = new ManagementSystemProperties(theObject);
+                curObj = embeddedObj;
+                isEmbedded = true;
+            }
+            else {
+                throw new System.ArgumentException("Klassnamnet matchar inte.");
+            }
+        }
+        
+        // En egenskap som returnerar WMI-klassens namnområde.
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string OriginatingNamespace {
+            get {
+                return "root\\virtualization\\v2";
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string ManagementClassName {
+            get {
+                string strRet = CreatedClassName;
+                if ((curObj != null)) {
+                    if ((curObj.ClassPath != null)) {
+                        strRet = ((string)(curObj["__CLASS"]));
+                        if (((strRet == null) 
+                                    || (strRet == string.Empty))) {
+                            strRet = CreatedClassName;
+                        }
+                    }
+                }
+                return strRet;
+            }
+        }
+        
+        // Egenskaper som pekar till ett inbäddat objekt för att hämta WMI-objektets systemegenskaper.
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ManagementSystemProperties SystemProperties {
+            get {
+                return PrivateSystemProperties;
+            }
+        }
+        
+        // En egenskap som returnerar det underliggande lateBound-objektet.
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public System.Management.ManagementBaseObject LateBoundObject {
+            get {
+                return curObj;
+            }
+        }
+        
+        // Objektets ManagementScope.
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public System.Management.ManagementScope Scope {
+            get {
+                if ((isEmbedded == false)) {
+                    return PrivateLateBoundObject.Scope;
+                }
+                else {
+                    return null;
+                }
+            }
+            set {
+                if ((isEmbedded == false)) {
+                    PrivateLateBoundObject.Scope = value;
+                }
+            }
+        }
+        
+        // Egenskap som visar aktiverat beteende för WMI-objektet. Om detta är True sparas WMI-objektet automatiskt efter varje egenskapsändring (d.v.s. Put() anropas efter en egenskapsändring).
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool AutoCommit {
+            get {
+                return AutoCommitProp;
+            }
+            set {
+                AutoCommitProp = value;
+            }
+        }
+        
+        // ManagementPath för det underliggande WMI-objektet.
+        [Browsable(true)]
+        public System.Management.ManagementPath Path {
+            get {
+                if ((isEmbedded == false)) {
+                    return PrivateLateBoundObject.Path;
+                }
+                else {
+                    return null;
+                }
+            }
+            set {
+                if ((isEmbedded == false)) {
+                    if ((CheckIfProperClass(null, value, null) != true)) {
+                        throw new System.ArgumentException("Klassnamnet matchar inte.");
+                    }
+                    PrivateLateBoundObject.Path = value;
+                }
+            }
+        }
+        
+        // En offentlig och statisk områdesegenskap som används i olika metoder.
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public static System.Management.ManagementScope StaticScope {
+            get {
+                return statMgmtScope;
+            }
+            set {
+                statMgmtScope = value;
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] AdditionalAvailability {
+            get {
+                return ((ushort[])(curObj["AdditionalAvailability"]));
+            }
+            set {
+                curObj["AdditionalAvailability"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsAvailabilityNull {
+            get {
+                if ((curObj["Availability"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort Availability {
+            get {
+                if ((curObj["Availability"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["Availability"]));
+            }
+            set {
+                curObj["Availability"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] AvailableRequestedStates {
+            get {
+                return ((ushort[])(curObj["AvailableRequestedStates"]));
+            }
+            set {
+                curObj["AvailableRequestedStates"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string Caption {
+            get {
+                return ((string)(curObj["Caption"]));
+            }
+            set {
+                curObj["Caption"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsClassCodeNull {
+            get {
+                if ((curObj["ClassCode"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("Indicates the USB class code.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte ClassCode {
+            get {
+                if ((curObj["ClassCode"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["ClassCode"]));
+            }
+            set {
+                curObj["ClassCode"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsCommandTimeoutNull {
+            get {
+                if ((curObj["CommandTimeout"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description(@"CommandTimeout is configurable by management applications supporting USB Redirections. When the Redirection Service redirects a USBDevice command to a remote device, and the remote device does not respond before CommandTimout times out, the Redirection Service will emulate a media eject event and re-try the command and/or try to re-establish the connection to the remote device. The timeout is expressed using the interval format of the datetime type.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public System.DateTime CommandTimeout {
+            get {
+                if ((curObj["CommandTimeout"] != null)) {
+                    return ToDateTime(((string)(curObj["CommandTimeout"])));
+                }
+                else {
+                    return System.DateTime.MinValue;
+                }
+            }
+            set {
+                curObj["CommandTimeout"] = ToDmtfDateTime(((System.DateTime)(value)));
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsCommunicationStatusNull {
+            get {
+                if ((curObj["CommunicationStatus"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort CommunicationStatus {
+            get {
+                if ((curObj["CommunicationStatus"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["CommunicationStatus"]));
+            }
+            set {
+                curObj["CommunicationStatus"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CreationClassName {
+            get {
+                return ((string)(curObj["CreationClassName"]));
+            }
+            set {
+                curObj["CreationClassName"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description(@"An array of USB 'alternate settings' for each interface in the currently selected configuration (indicated by the CurrentConfigValue property). This array has one entry for each interface in the configuration. If the property, CurrentConfigValue, is zero (indicating the Device is not configured), the array is undefined. To understand how to parse this octet string, refer to the USB Specification.")]
+        public byte[] CurrentAlternateSettings {
+            get {
+                return ((byte[])(curObj["CurrentAlternateSettings"]));
+            }
+            set {
+                curObj["CurrentAlternateSettings"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsCurrentConfigValueNull {
+            get {
+                if ((curObj["CurrentConfigValue"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("Indicates the configuration currently selected for the Device. If this value is z" +
+            "ero, the Device is unconfigured.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte CurrentConfigValue {
+            get {
+                if ((curObj["CurrentConfigValue"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["CurrentConfigValue"]));
+            }
+            set {
+                curObj["CurrentConfigValue"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string Description {
+            get {
+                return ((string)(curObj["Description"]));
+            }
+            set {
+                curObj["Description"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsDetailedStatusNull {
+            get {
+                if ((curObj["DetailedStatus"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort DetailedStatus {
+            get {
+                if ((curObj["DetailedStatus"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["DetailedStatus"]));
+            }
+            set {
+                curObj["DetailedStatus"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string DeviceID {
+            get {
+                return ((string)(curObj["DeviceID"]));
+            }
+            set {
+                curObj["DeviceID"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsDeviceReleaseNumberNull {
+            get {
+                if ((curObj["DeviceReleaseNumber"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Device Release Number in Binary-Cod" +
+            "ed Decimal.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort DeviceReleaseNumber {
+            get {
+                if ((curObj["DeviceReleaseNumber"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["DeviceReleaseNumber"]));
+            }
+            set {
+                curObj["DeviceReleaseNumber"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string ElementName {
+            get {
+                return ((string)(curObj["ElementName"]));
+            }
+            set {
+                curObj["ElementName"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsEnabledDefaultNull {
+            get {
+                if ((curObj["EnabledDefault"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort EnabledDefault {
+            get {
+                if ((curObj["EnabledDefault"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["EnabledDefault"]));
+            }
+            set {
+                curObj["EnabledDefault"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsEnabledStateNull {
+            get {
+                if ((curObj["EnabledState"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort EnabledState {
+            get {
+                if ((curObj["EnabledState"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["EnabledState"]));
+            }
+            set {
+                curObj["EnabledState"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsErrorClearedNull {
+            get {
+                if ((curObj["ErrorCleared"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public bool ErrorCleared {
+            get {
+                if ((curObj["ErrorCleared"] == null)) {
+                    return System.Convert.ToBoolean(0);
+                }
+                return ((bool)(curObj["ErrorCleared"]));
+            }
+            set {
+                curObj["ErrorCleared"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string ErrorDescription {
+            get {
+                return ((string)(curObj["ErrorDescription"]));
+            }
+            set {
+                curObj["ErrorDescription"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsHealthStateNull {
+            get {
+                if ((curObj["HealthState"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort HealthState {
+            get {
+                if ((curObj["HealthState"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["HealthState"]));
+            }
+            set {
+                curObj["HealthState"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string[] IdentifyingDescriptions {
+            get {
+                return ((string[])(curObj["IdentifyingDescriptions"]));
+            }
+            set {
+                curObj["IdentifyingDescriptions"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsInstallDateNull {
+            get {
+                if ((curObj["InstallDate"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public System.DateTime InstallDate {
+            get {
+                if ((curObj["InstallDate"] != null)) {
+                    return ToDateTime(((string)(curObj["InstallDate"])));
+                }
+                else {
+                    return System.DateTime.MinValue;
+                }
+            }
+            set {
+                curObj["InstallDate"] = ToDmtfDateTime(((System.DateTime)(value)));
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string InstanceID {
+            get {
+                return ((string)(curObj["InstanceID"]));
+            }
+            set {
+                curObj["InstanceID"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsLastErrorCodeNull {
+            get {
+                if ((curObj["LastErrorCode"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public uint LastErrorCode {
+            get {
+                if ((curObj["LastErrorCode"] == null)) {
+                    return System.Convert.ToUInt32(0);
+                }
+                return ((uint)(curObj["LastErrorCode"]));
+            }
+            set {
+                curObj["LastErrorCode"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptior, Manufacturer string.")]
+        public string Manufacturer {
+            get {
+                return ((string)(curObj["Manufacturer"]));
+            }
+            set {
+                curObj["Manufacturer"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsMaxPacketSizeNull {
+            get {
+                if ((curObj["MaxPacketSize"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Maximum Packet size for the USB zer" +
+            "o endpoint. Valid sizes are 8, 16, 32, 64.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte MaxPacketSize {
+            get {
+                if ((curObj["MaxPacketSize"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["MaxPacketSize"]));
+            }
+            set {
+                curObj["MaxPacketSize"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsMaxQuiesceTimeNull {
+            get {
+                if ((curObj["MaxQuiesceTime"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ulong MaxQuiesceTime {
+            get {
+                if ((curObj["MaxQuiesceTime"] == null)) {
+                    return System.Convert.ToUInt64(0);
+                }
+                return ((ulong)(curObj["MaxQuiesceTime"]));
+            }
+            set {
+                curObj["MaxQuiesceTime"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string Name {
+            get {
+                return ((string)(curObj["Name"]));
+            }
+            set {
+                curObj["Name"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsNumberOfConfigsNull {
+            get {
+                if ((curObj["NumberOfConfigs"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("Number of device configurations that are defined for the Device.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte NumberOfConfigs {
+            get {
+                if ((curObj["NumberOfConfigs"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["NumberOfConfigs"]));
+            }
+            set {
+                curObj["NumberOfConfigs"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsOperatingStatusNull {
+            get {
+                if ((curObj["OperatingStatus"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort OperatingStatus {
+            get {
+                if ((curObj["OperatingStatus"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["OperatingStatus"]));
+            }
+            set {
+                curObj["OperatingStatus"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] OperationalStatus {
+            get {
+                return ((ushort[])(curObj["OperationalStatus"]));
+            }
+            set {
+                curObj["OperationalStatus"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string OtherEnabledState {
+            get {
+                return ((string)(curObj["OtherEnabledState"]));
+            }
+            set {
+                curObj["OtherEnabledState"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string[] OtherIdentifyingInfo {
+            get {
+                return ((string[])(curObj["OtherIdentifyingInfo"]));
+            }
+            set {
+                curObj["OtherIdentifyingInfo"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] PowerManagementCapabilities {
+            get {
+                return ((ushort[])(curObj["PowerManagementCapabilities"]));
+            }
+            set {
+                curObj["PowerManagementCapabilities"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsPowerManagementSupportedNull {
+            get {
+                if ((curObj["PowerManagementSupported"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public bool PowerManagementSupported {
+            get {
+                if ((curObj["PowerManagementSupported"] == null)) {
+                    return System.Convert.ToBoolean(0);
+                }
+                return ((bool)(curObj["PowerManagementSupported"]));
+            }
+            set {
+                curObj["PowerManagementSupported"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsPowerOnHoursNull {
+            get {
+                if ((curObj["PowerOnHours"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ulong PowerOnHours {
+            get {
+                if ((curObj["PowerOnHours"] == null)) {
+                    return System.Convert.ToUInt64(0);
+                }
+                return ((ulong)(curObj["PowerOnHours"]));
+            }
+            set {
+                curObj["PowerOnHours"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsPrimaryStatusNull {
+            get {
+                if ((curObj["PrimaryStatus"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort PrimaryStatus {
+            get {
+                if ((curObj["PrimaryStatus"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["PrimaryStatus"]));
+            }
+            set {
+                curObj["PrimaryStatus"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Product String.")]
+        public string Product {
+            get {
+                return ((string)(curObj["Product"]));
+            }
+            set {
+                curObj["Product"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsProductIDNull {
+            get {
+                if ((curObj["ProductID"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Product ID assigned by manufacturer" +
+            ".")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort ProductID {
+            get {
+                if ((curObj["ProductID"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["ProductID"]));
+            }
+            set {
+                curObj["ProductID"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsProtocolCodeNull {
+            get {
+                if ((curObj["ProtocolCode"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("Indicates the USB protocol code.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte ProtocolCode {
+            get {
+                if ((curObj["ProtocolCode"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["ProtocolCode"]));
+            }
+            set {
+                curObj["ProtocolCode"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsRequestedStateNull {
+            get {
+                if ((curObj["RequestedState"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort RequestedState {
+            get {
+                if ((curObj["RequestedState"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["RequestedState"]));
+            }
+            set {
+                curObj["RequestedState"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Serial Number String.")]
+        public string SerialNumber {
+            get {
+                return ((string)(curObj["SerialNumber"]));
+            }
+            set {
+                curObj["SerialNumber"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string Status {
+            get {
+                return ((string)(curObj["Status"]));
+            }
+            set {
+                curObj["Status"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string[] StatusDescriptions {
+            get {
+                return ((string[])(curObj["StatusDescriptions"]));
+            }
+            set {
+                curObj["StatusDescriptions"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsStatusInfoNull {
+            get {
+                if ((curObj["StatusInfo"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort StatusInfo {
+            get {
+                if ((curObj["StatusInfo"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["StatusInfo"]));
+            }
+            set {
+                curObj["StatusInfo"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsSubclassCodeNull {
+            get {
+                if ((curObj["SubclassCode"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("Indicates the USB subclass code.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public byte SubclassCode {
+            get {
+                if ((curObj["SubclassCode"] == null)) {
+                    return System.Convert.ToByte(0);
+                }
+                return ((byte)(curObj["SubclassCode"]));
+            }
+            set {
+                curObj["SubclassCode"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string SystemCreationClassName {
+            get {
+                return ((string)(curObj["SystemCreationClassName"]));
+            }
+            set {
+                curObj["SystemCreationClassName"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string SystemName {
+            get {
+                return ((string)(curObj["SystemName"]));
+            }
+            set {
+                curObj["SystemName"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsTimeOfLastStateChangeNull {
+            get {
+                if ((curObj["TimeOfLastStateChange"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public System.DateTime TimeOfLastStateChange {
+            get {
+                if ((curObj["TimeOfLastStateChange"] != null)) {
+                    return ToDateTime(((string)(curObj["TimeOfLastStateChange"])));
+                }
+                else {
+                    return System.DateTime.MinValue;
+                }
+            }
+            set {
+                curObj["TimeOfLastStateChange"] = ToDmtfDateTime(((System.DateTime)(value)));
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsTotalPowerOnHoursNull {
+            get {
+                if ((curObj["TotalPowerOnHours"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ulong TotalPowerOnHours {
+            get {
+                if ((curObj["TotalPowerOnHours"] == null)) {
+                    return System.Convert.ToUInt64(0);
+                }
+                return ((ulong)(curObj["TotalPowerOnHours"]));
+            }
+            set {
+                curObj["TotalPowerOnHours"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsTransitioningToStateNull {
+            get {
+                if ((curObj["TransitioningToState"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort TransitioningToState {
+            get {
+                if ((curObj["TransitioningToState"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["TransitioningToState"]));
+            }
+            set {
+                curObj["TransitioningToState"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsUSBVersionNull {
+            get {
+                if ((curObj["USBVersion"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description(@"Indicates the latest USB Version supported by the USB Device. The property is expressed as a Binary-Coded Decimal (BCD) where a decimal point is implied between the 2nd and 3rd digits. For example, a value of 0x201 indicates that version 2.01 is supported.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort USBVersion {
+            get {
+                if ((curObj["USBVersion"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["USBVersion"]));
+            }
+            set {
+                curObj["USBVersion"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsUSBVersionInBCDNull {
+            get {
+                if ((curObj["USBVersionInBCD"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, where \'bcdUSB\' is the USB Specifica" +
+            "tion Number, in Binary-Coded Decimal format, that the device complies with.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort USBVersionInBCD {
+            get {
+                if ((curObj["USBVersionInBCD"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["USBVersionInBCD"]));
+            }
+            set {
+                curObj["USBVersionInBCD"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsVendorIDNull {
+            get {
+                if ((curObj["VendorID"] == null)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Description("From the USB specification Device Descriptor, Vendor ID assigned by USB.org.")]
+        [TypeConverter(typeof(WMIValueTypeConverter))]
+        public ushort VendorID {
+            get {
+                if ((curObj["VendorID"] == null)) {
+                    return System.Convert.ToUInt16(0);
+                }
+                return ((ushort)(curObj["VendorID"]));
+            }
+            set {
+                curObj["VendorID"] = value;
+                if (((isEmbedded == false) 
+                            && (AutoCommitProp == true))) {
+                    PrivateLateBoundObject.Put();
+                }
+            }
+        }
+        
+        private bool CheckIfProperClass(System.Management.ManagementScope mgmtScope, System.Management.ManagementPath path, System.Management.ObjectGetOptions OptionsParam) {
+            if (((path != null) 
+                        && (string.Compare(path.ClassName, this.ManagementClassName, true, System.Globalization.CultureInfo.InvariantCulture) == 0))) {
+                return true;
+            }
+            else {
+                return CheckIfProperClass(new System.Management.ManagementObject(mgmtScope, path, OptionsParam));
+            }
+        }
+        
+        private bool CheckIfProperClass(System.Management.ManagementBaseObject theObj) {
+            if (((theObj != null) 
+                        && (string.Compare(((string)(theObj["__CLASS"])), this.ManagementClassName, true, System.Globalization.CultureInfo.InvariantCulture) == 0))) {
+                return true;
+            }
+            else {
+                System.Array parentClasses = ((System.Array)(theObj["__DERIVATION"]));
+                if ((parentClasses != null)) {
+                    int count = 0;
+                    for (count = 0; (count < parentClasses.Length); count = (count + 1)) {
+                        if ((string.Compare(((string)(parentClasses.GetValue(count))), this.ManagementClassName, true, System.Globalization.CultureInfo.InvariantCulture) == 0)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private void ResetAdditionalAvailability() {
+            curObj["AdditionalAvailability"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeAvailability() {
+            if ((this.IsAvailabilityNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetAvailability() {
+            curObj["Availability"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetAvailableRequestedStates() {
+            curObj["AvailableRequestedStates"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetCaption() {
+            curObj["Caption"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeClassCode() {
+            if ((this.IsClassCodeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetClassCode() {
+            curObj["ClassCode"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        // Konverterar ett givet datum/tid med DMTF-format till System.DateTime-objekt.
+        static System.DateTime ToDateTime(string dmtfDate) {
+            System.DateTime initializer = System.DateTime.MinValue;
+            int year = initializer.Year;
+            int month = initializer.Month;
+            int day = initializer.Day;
+            int hour = initializer.Hour;
+            int minute = initializer.Minute;
+            int second = initializer.Second;
+            long ticks = 0;
+            string dmtf = dmtfDate;
+            System.DateTime datetime = System.DateTime.MinValue;
+            string tempString = string.Empty;
+            if ((dmtf == null)) {
+                throw new System.ArgumentOutOfRangeException();
+            }
+            if ((dmtf.Length == 0)) {
+                throw new System.ArgumentOutOfRangeException();
+            }
+            if ((dmtf.Length != 25)) {
+                throw new System.ArgumentOutOfRangeException();
+            }
+            try {
+                tempString = dmtf.Substring(0, 4);
+                if (("****" != tempString)) {
+                    year = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(4, 2);
+                if (("**" != tempString)) {
+                    month = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(6, 2);
+                if (("**" != tempString)) {
+                    day = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(8, 2);
+                if (("**" != tempString)) {
+                    hour = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(10, 2);
+                if (("**" != tempString)) {
+                    minute = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(12, 2);
+                if (("**" != tempString)) {
+                    second = int.Parse(tempString);
+                }
+                tempString = dmtf.Substring(15, 6);
+                if (("******" != tempString)) {
+                    ticks = (long.Parse(tempString) * ((long)((System.TimeSpan.TicksPerMillisecond / 1000))));
+                }
+                if (((((((((year < 0) 
+                            || (month < 0)) 
+                            || (day < 0)) 
+                            || (hour < 0)) 
+                            || (minute < 0)) 
+                            || (minute < 0)) 
+                            || (second < 0)) 
+                            || (ticks < 0))) {
+                    throw new System.ArgumentOutOfRangeException();
+                }
+            }
+            catch (System.Exception e) {
+                throw new System.ArgumentOutOfRangeException(null, e.Message);
+            }
+            datetime = new System.DateTime(year, month, day, hour, minute, second, 0);
+            datetime = datetime.AddTicks(ticks);
+            System.TimeSpan tickOffset = System.TimeZone.CurrentTimeZone.GetUtcOffset(datetime);
+            int UTCOffset = 0;
+            int OffsetToBeAdjusted = 0;
+            long OffsetMins = ((long)((tickOffset.Ticks / System.TimeSpan.TicksPerMinute)));
+            tempString = dmtf.Substring(22, 3);
+            if ((tempString != "******")) {
+                tempString = dmtf.Substring(21, 4);
+                try {
+                    UTCOffset = int.Parse(tempString);
+                }
+                catch (System.Exception e) {
+                    throw new System.ArgumentOutOfRangeException(null, e.Message);
+                }
+                OffsetToBeAdjusted = ((int)((OffsetMins - UTCOffset)));
+                datetime = datetime.AddMinutes(((double)(OffsetToBeAdjusted)));
+            }
+            return datetime;
+        }
+        
+        // Konverterar ett givet System.DateTime-objekt till DMTF-datum/tid.
+        static string ToDmtfDateTime(System.DateTime date) {
+            string utcString = string.Empty;
+            System.TimeSpan tickOffset = System.TimeZone.CurrentTimeZone.GetUtcOffset(date);
+            long OffsetMins = ((long)((tickOffset.Ticks / System.TimeSpan.TicksPerMinute)));
+            if ((System.Math.Abs(OffsetMins) > 999)) {
+                date = date.ToUniversalTime();
+                utcString = "+000";
+            }
+            else {
+                if ((tickOffset.Ticks >= 0)) {
+                    utcString = string.Concat("+", ((long)((tickOffset.Ticks / System.TimeSpan.TicksPerMinute))).ToString().PadLeft(3, '0'));
+                }
+                else {
+                    string strTemp = ((long)(OffsetMins)).ToString();
+                    utcString = string.Concat("-", strTemp.Substring(1, (strTemp.Length - 1)).PadLeft(3, '0'));
+                }
+            }
+            string dmtfDateTime = ((int)(date.Year)).ToString().PadLeft(4, '0');
+            dmtfDateTime = string.Concat(dmtfDateTime, ((int)(date.Month)).ToString().PadLeft(2, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, ((int)(date.Day)).ToString().PadLeft(2, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, ((int)(date.Hour)).ToString().PadLeft(2, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, ((int)(date.Minute)).ToString().PadLeft(2, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, ((int)(date.Second)).ToString().PadLeft(2, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, ".");
+            System.DateTime dtTemp = new System.DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, 0);
+            long microsec = ((long)((((date.Ticks - dtTemp.Ticks) 
+                        * 1000) 
+                        / System.TimeSpan.TicksPerMillisecond)));
+            string strMicrosec = ((long)(microsec)).ToString();
+            if ((strMicrosec.Length > 6)) {
+                strMicrosec = strMicrosec.Substring(0, 6);
+            }
+            dmtfDateTime = string.Concat(dmtfDateTime, strMicrosec.PadLeft(6, '0'));
+            dmtfDateTime = string.Concat(dmtfDateTime, utcString);
+            return dmtfDateTime;
+        }
+        
+        private bool ShouldSerializeCommandTimeout() {
+            if ((this.IsCommandTimeoutNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetCommandTimeout() {
+            curObj["CommandTimeout"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeCommunicationStatus() {
+            if ((this.IsCommunicationStatusNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetCommunicationStatus() {
+            curObj["CommunicationStatus"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetCurrentAlternateSettings() {
+            curObj["CurrentAlternateSettings"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeCurrentConfigValue() {
+            if ((this.IsCurrentConfigValueNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetCurrentConfigValue() {
+            curObj["CurrentConfigValue"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetDescription() {
+            curObj["Description"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeDetailedStatus() {
+            if ((this.IsDetailedStatusNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetDetailedStatus() {
+            curObj["DetailedStatus"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeDeviceReleaseNumber() {
+            if ((this.IsDeviceReleaseNumberNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetDeviceReleaseNumber() {
+            curObj["DeviceReleaseNumber"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetElementName() {
+            curObj["ElementName"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeEnabledDefault() {
+            if ((this.IsEnabledDefaultNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetEnabledDefault() {
+            curObj["EnabledDefault"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeEnabledState() {
+            if ((this.IsEnabledStateNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetEnabledState() {
+            curObj["EnabledState"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeErrorCleared() {
+            if ((this.IsErrorClearedNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetErrorCleared() {
+            curObj["ErrorCleared"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetErrorDescription() {
+            curObj["ErrorDescription"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeHealthState() {
+            if ((this.IsHealthStateNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetHealthState() {
+            curObj["HealthState"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetIdentifyingDescriptions() {
+            curObj["IdentifyingDescriptions"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeInstallDate() {
+            if ((this.IsInstallDateNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetInstallDate() {
+            curObj["InstallDate"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetInstanceID() {
+            curObj["InstanceID"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeLastErrorCode() {
+            if ((this.IsLastErrorCodeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetLastErrorCode() {
+            curObj["LastErrorCode"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetManufacturer() {
+            curObj["Manufacturer"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeMaxPacketSize() {
+            if ((this.IsMaxPacketSizeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetMaxPacketSize() {
+            curObj["MaxPacketSize"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeMaxQuiesceTime() {
+            if ((this.IsMaxQuiesceTimeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetMaxQuiesceTime() {
+            curObj["MaxQuiesceTime"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetName() {
+            curObj["Name"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeNumberOfConfigs() {
+            if ((this.IsNumberOfConfigsNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetNumberOfConfigs() {
+            curObj["NumberOfConfigs"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeOperatingStatus() {
+            if ((this.IsOperatingStatusNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetOperatingStatus() {
+            curObj["OperatingStatus"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetOperationalStatus() {
+            curObj["OperationalStatus"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetOtherEnabledState() {
+            curObj["OtherEnabledState"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetOtherIdentifyingInfo() {
+            curObj["OtherIdentifyingInfo"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetPowerManagementCapabilities() {
+            curObj["PowerManagementCapabilities"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializePowerManagementSupported() {
+            if ((this.IsPowerManagementSupportedNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetPowerManagementSupported() {
+            curObj["PowerManagementSupported"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializePowerOnHours() {
+            if ((this.IsPowerOnHoursNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetPowerOnHours() {
+            curObj["PowerOnHours"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializePrimaryStatus() {
+            if ((this.IsPrimaryStatusNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetPrimaryStatus() {
+            curObj["PrimaryStatus"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetProduct() {
+            curObj["Product"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeProductID() {
+            if ((this.IsProductIDNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetProductID() {
+            curObj["ProductID"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeProtocolCode() {
+            if ((this.IsProtocolCodeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetProtocolCode() {
+            curObj["ProtocolCode"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeRequestedState() {
+            if ((this.IsRequestedStateNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetRequestedState() {
+            curObj["RequestedState"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetSerialNumber() {
+            curObj["SerialNumber"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetStatus() {
+            curObj["Status"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private void ResetStatusDescriptions() {
+            curObj["StatusDescriptions"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeStatusInfo() {
+            if ((this.IsStatusInfoNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetStatusInfo() {
+            curObj["StatusInfo"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeSubclassCode() {
+            if ((this.IsSubclassCodeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetSubclassCode() {
+            curObj["SubclassCode"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeTimeOfLastStateChange() {
+            if ((this.IsTimeOfLastStateChangeNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetTimeOfLastStateChange() {
+            curObj["TimeOfLastStateChange"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeTotalPowerOnHours() {
+            if ((this.IsTotalPowerOnHoursNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetTotalPowerOnHours() {
+            curObj["TotalPowerOnHours"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeTransitioningToState() {
+            if ((this.IsTransitioningToStateNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetTransitioningToState() {
+            curObj["TransitioningToState"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeUSBVersion() {
+            if ((this.IsUSBVersionNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetUSBVersion() {
+            curObj["USBVersion"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeUSBVersionInBCD() {
+            if ((this.IsUSBVersionInBCDNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetUSBVersionInBCD() {
+            curObj["USBVersionInBCD"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        private bool ShouldSerializeVendorID() {
+            if ((this.IsVendorIDNull == false)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private void ResetVendorID() {
+            curObj["VendorID"] = null;
+            if (((isEmbedded == false) 
+                        && (AutoCommitProp == true))) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        [Browsable(true)]
+        public void CommitObject() {
+            if ((isEmbedded == false)) {
+                PrivateLateBoundObject.Put();
+            }
+        }
+        
+        [Browsable(true)]
+        public void CommitObject(System.Management.PutOptions putOptions) {
+            if ((isEmbedded == false)) {
+                PrivateLateBoundObject.Put(putOptions);
+            }
+        }
+        
+        private void Initialize() {
+            AutoCommitProp = true;
+            isEmbedded = false;
+        }
+        
+        private static string ConstructPath(string keyCreationClassName, string keyDeviceID, string keySystemCreationClassName, string keySystemName) {
+            string strPath = "root\\virtualization\\v2:CIM_USBDevice";
+            strPath = string.Concat(strPath, string.Concat(".CreationClassName=", string.Concat("\"", string.Concat(keyCreationClassName, "\""))));
+            strPath = string.Concat(strPath, string.Concat(",DeviceID=", string.Concat("\"", string.Concat(keyDeviceID, "\""))));
+            strPath = string.Concat(strPath, string.Concat(",SystemCreationClassName=", string.Concat("\"", string.Concat(keySystemCreationClassName, "\""))));
+            strPath = string.Concat(strPath, string.Concat(",SystemName=", string.Concat("\"", string.Concat(keySystemName, "\""))));
+            return strPath;
+        }
+        
+        private void InitializeObject(System.Management.ManagementScope mgmtScope, System.Management.ManagementPath path, System.Management.ObjectGetOptions getOptions) {
+            Initialize();
+            if ((path != null)) {
+                if ((CheckIfProperClass(mgmtScope, path, getOptions) != true)) {
+                    throw new System.ArgumentException("Klassnamnet matchar inte.");
+                }
+            }
+            PrivateLateBoundObject = new System.Management.ManagementObject(mgmtScope, path, getOptions);
+            PrivateSystemProperties = new ManagementSystemProperties(PrivateLateBoundObject);
+            curObj = PrivateLateBoundObject;
+        }
+        
+        // Olika överlagringar av hjälp om GetInstances() i WMI-klassens uppräkningsinstanser.
+        public static USBDeviceCollection GetInstances() {
+            return GetInstances(null, null, null);
+        }
+        
+        public static USBDeviceCollection GetInstances(string condition) {
+            return GetInstances(null, condition, null);
+        }
+        
+        public static USBDeviceCollection GetInstances(string[] selectedProperties) {
+            return GetInstances(null, null, selectedProperties);
+        }
+        
+        public static USBDeviceCollection GetInstances(string condition, string[] selectedProperties) {
+            return GetInstances(null, condition, selectedProperties);
+        }
+        
+        public static USBDeviceCollection GetInstances(System.Management.ManagementScope mgmtScope, System.Management.EnumerationOptions enumOptions) {
+            if ((mgmtScope == null)) {
+                if ((statMgmtScope == null)) {
+                    mgmtScope = new System.Management.ManagementScope();
+                    mgmtScope.Path.NamespacePath = "root\\virtualization\\v2";
+                }
+                else {
+                    mgmtScope = statMgmtScope;
+                }
+            }
+            System.Management.ManagementPath pathObj = new System.Management.ManagementPath();
+            pathObj.ClassName = "CIM_USBDevice";
+            pathObj.NamespacePath = "root\\virtualization\\v2";
+            System.Management.ManagementClass clsObject = new System.Management.ManagementClass(mgmtScope, pathObj, null);
+            if ((enumOptions == null)) {
+                enumOptions = new System.Management.EnumerationOptions();
+                enumOptions.EnsureLocatable = true;
+            }
+            return new USBDeviceCollection(clsObject.GetInstances(enumOptions));
+        }
+        
+        public static USBDeviceCollection GetInstances(System.Management.ManagementScope mgmtScope, string condition) {
+            return GetInstances(mgmtScope, condition, null);
+        }
+        
+        public static USBDeviceCollection GetInstances(System.Management.ManagementScope mgmtScope, string[] selectedProperties) {
+            return GetInstances(mgmtScope, null, selectedProperties);
+        }
+        
+        public static USBDeviceCollection GetInstances(System.Management.ManagementScope mgmtScope, string condition, string[] selectedProperties) {
+            if ((mgmtScope == null)) {
+                if ((statMgmtScope == null)) {
+                    mgmtScope = new System.Management.ManagementScope();
+                    mgmtScope.Path.NamespacePath = "root\\virtualization\\v2";
+                }
+                else {
+                    mgmtScope = statMgmtScope;
+                }
+            }
+            System.Management.ManagementObjectSearcher ObjectSearcher = new System.Management.ManagementObjectSearcher(mgmtScope, new SelectQuery("CIM_USBDevice", condition, selectedProperties));
+            System.Management.EnumerationOptions enumOptions = new System.Management.EnumerationOptions();
+            enumOptions.EnsureLocatable = true;
+            ObjectSearcher.Options = enumOptions;
+            return new USBDeviceCollection(ObjectSearcher.Get());
+        }
+        
+        [Browsable(true)]
+        public static USBDevice CreateInstance() {
+            System.Management.ManagementScope mgmtScope = null;
+            if ((statMgmtScope == null)) {
+                mgmtScope = new System.Management.ManagementScope();
+                mgmtScope.Path.NamespacePath = CreatedWmiNamespace;
+            }
+            else {
+                mgmtScope = statMgmtScope;
+            }
+            System.Management.ManagementPath mgmtPath = new System.Management.ManagementPath(CreatedClassName);
+            System.Management.ManagementClass tmpMgmtClass = new System.Management.ManagementClass(mgmtScope, mgmtPath, null);
+            return new USBDevice(tmpMgmtClass.CreateInstance());
+        }
+        
+        [Browsable(true)]
+        public void Delete() {
+            PrivateLateBoundObject.Delete();
+        }
+        
+        public uint EnableDevice(bool Enabled) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("EnableDevice");
+                inParams["Enabled"] = ((bool)(Enabled));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("EnableDevice", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint GetDescriptor(ushort RequestIndex, ref ushort RequestLength, byte RequestType, ushort RequestValue, out byte[] Buffer) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("GetDescriptor");
+                inParams["RequestIndex"] = ((ushort)(RequestIndex));
+                inParams["RequestLength"] = ((ushort)(RequestLength));
+                inParams["RequestType"] = ((byte)(RequestType));
+                inParams["RequestValue"] = ((ushort)(RequestValue));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("GetDescriptor", inParams, null);
+                Buffer = ((byte[])(outParams.Properties["Buffer"].Value));
+                RequestLength = ((ushort)(outParams.Properties["RequestLength"].Value));
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                Buffer = null;
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint OnlineDevice(bool Online) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("OnlineDevice");
+                inParams["Online"] = ((bool)(Online));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("OnlineDevice", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint QuiesceDevice(bool Quiesce) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("QuiesceDevice");
+                inParams["Quiesce"] = ((bool)(Quiesce));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("QuiesceDevice", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint RequestStateChange(ushort RequestedState, System.DateTime TimeoutPeriod, out System.Management.ManagementPath Job) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("RequestStateChange");
+                inParams["RequestedState"] = ((ushort)(RequestedState));
+                inParams["TimeoutPeriod"] = ToDmtfDateTime(((System.DateTime)(TimeoutPeriod)));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("RequestStateChange", inParams, null);
+                Job = null;
+                if ((outParams.Properties["Job"] != null)) {
+                    Job = new System.Management.ManagementPath(outParams.Properties["Job"].ToString());
+                }
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                Job = null;
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint Reset() {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("Reset", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint RestoreProperties() {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("RestoreProperties", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint SaveProperties() {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("SaveProperties", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        public uint SetPowerState(ushort PowerState, System.DateTime Time) {
+            if ((isEmbedded == false)) {
+                System.Management.ManagementBaseObject inParams = null;
+                inParams = PrivateLateBoundObject.GetMethodParameters("SetPowerState");
+                inParams["PowerState"] = ((ushort)(PowerState));
+                inParams["Time"] = ToDmtfDateTime(((System.DateTime)(Time)));
+                System.Management.ManagementBaseObject outParams = PrivateLateBoundObject.InvokeMethod("SetPowerState", inParams, null);
+                return System.Convert.ToUInt32(outParams.Properties["ReturnValue"].Value);
+            }
+            else {
+                return System.Convert.ToUInt32(0);
+            }
+        }
+        
+        // Implementering av uppräknare för klassens uppräkningsinstanser.
+        public class USBDeviceCollection : object, ICollection {
+            
+            private ManagementObjectCollection privColObj;
+            
+            public USBDeviceCollection(ManagementObjectCollection objCollection) {
+                privColObj = objCollection;
+            }
+            
+            public virtual int Count {
+                get {
+                    return privColObj.Count;
+                }
+            }
+            
+            public virtual bool IsSynchronized {
+                get {
+                    return privColObj.IsSynchronized;
+                }
+            }
+            
+            public virtual object SyncRoot {
+                get {
+                    return this;
+                }
+            }
+            
+            public virtual void CopyTo(System.Array array, int index) {
+                privColObj.CopyTo(array, index);
+                int nCtr;
+                for (nCtr = 0; (nCtr < array.Length); nCtr = (nCtr + 1)) {
+                    array.SetValue(new USBDevice(((System.Management.ManagementObject)(array.GetValue(nCtr)))), nCtr);
+                }
+            }
+            
+            public virtual System.Collections.IEnumerator GetEnumerator() {
+                return new USBDeviceEnumerator(privColObj.GetEnumerator());
+            }
+            
+            public class USBDeviceEnumerator : object, System.Collections.IEnumerator {
+                
+                private ManagementObjectCollection.ManagementObjectEnumerator privObjEnum;
+                
+                public USBDeviceEnumerator(ManagementObjectCollection.ManagementObjectEnumerator objEnum) {
+                    privObjEnum = objEnum;
+                }
+                
+                public virtual object Current {
+                    get {
+                        return new USBDevice(((System.Management.ManagementObject)(privObjEnum.Current)));
+                    }
+                }
+                
+                public virtual bool MoveNext() {
+                    return privObjEnum.MoveNext();
+                }
+                
+                public virtual void Reset() {
+                    privObjEnum.Reset();
+                }
+            }
+        }
+        
+        // TypeConverter som hanterar Null-värden för ValueType-egenskaper
+        public class WMIValueTypeConverter : TypeConverter {
+            
+            private TypeConverter baseConverter;
+            
+            private System.Type baseType;
+            
+            public WMIValueTypeConverter(System.Type inBaseType) {
+                baseConverter = TypeDescriptor.GetConverter(inBaseType);
+                baseType = inBaseType;
+            }
+            
+            public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type srcType) {
+                return baseConverter.CanConvertFrom(context, srcType);
+            }
+            
+            public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) {
+                return baseConverter.CanConvertTo(context, destinationType);
+            }
+            
+            public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) {
+                return baseConverter.ConvertFrom(context, culture, value);
+            }
+            
+            public override object CreateInstance(System.ComponentModel.ITypeDescriptorContext context, System.Collections.IDictionary dictionary) {
+                return baseConverter.CreateInstance(context, dictionary);
+            }
+            
+            public override bool GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext context) {
+                return baseConverter.GetCreateInstanceSupported(context);
+            }
+            
+            public override PropertyDescriptorCollection GetProperties(System.ComponentModel.ITypeDescriptorContext context, object value, System.Attribute[] attributeVar) {
+                return baseConverter.GetProperties(context, value, attributeVar);
+            }
+            
+            public override bool GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext context) {
+                return baseConverter.GetPropertiesSupported(context);
+            }
+            
+            public override System.ComponentModel.TypeConverter.StandardValuesCollection GetStandardValues(System.ComponentModel.ITypeDescriptorContext context) {
+                return baseConverter.GetStandardValues(context);
+            }
+            
+            public override bool GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext context) {
+                return baseConverter.GetStandardValuesExclusive(context);
+            }
+            
+            public override bool GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext context) {
+                return baseConverter.GetStandardValuesSupported(context);
+            }
+            
+            public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) {
+                if ((baseType.BaseType == typeof(System.Enum))) {
+                    if ((value.GetType() == destinationType)) {
+                        return value;
+                    }
+                    if ((((value == null) 
+                                && (context != null)) 
+                                && (context.PropertyDescriptor.ShouldSerializeValue(context.Instance) == false))) {
+                        return  "NULL_ENUM_VALUE" ;
+                    }
+                    return baseConverter.ConvertTo(context, culture, value, destinationType);
+                }
+                if (((baseType == typeof(bool)) 
+                            && (baseType.BaseType == typeof(System.ValueType)))) {
+                    if ((((value == null) 
+                                && (context != null)) 
+                                && (context.PropertyDescriptor.ShouldSerializeValue(context.Instance) == false))) {
+                        return "";
+                    }
+                    return baseConverter.ConvertTo(context, culture, value, destinationType);
+                }
+                if (((context != null) 
+                            && (context.PropertyDescriptor.ShouldSerializeValue(context.Instance) == false))) {
+                    return "";
+                }
+                return baseConverter.ConvertTo(context, culture, value, destinationType);
+            }
+        }
+        
+        // En inbäddad klass som representerar WMI-systemegenskaper.
+        [TypeConverter(typeof(System.ComponentModel.ExpandableObjectConverter))]
+        public class ManagementSystemProperties {
+            
+            private System.Management.ManagementBaseObject PrivateLateBoundObject;
+            
+            public ManagementSystemProperties(System.Management.ManagementBaseObject ManagedObject) {
+                PrivateLateBoundObject = ManagedObject;
+            }
+            
+            [Browsable(true)]
+            public int GENUS {
+                get {
+                    return ((int)(PrivateLateBoundObject["__GENUS"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string CLASS {
+                get {
+                    return ((string)(PrivateLateBoundObject["__CLASS"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string SUPERCLASS {
+                get {
+                    return ((string)(PrivateLateBoundObject["__SUPERCLASS"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string DYNASTY {
+                get {
+                    return ((string)(PrivateLateBoundObject["__DYNASTY"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string RELPATH {
+                get {
+                    return ((string)(PrivateLateBoundObject["__RELPATH"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public int PROPERTY_COUNT {
+                get {
+                    return ((int)(PrivateLateBoundObject["__PROPERTY_COUNT"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string[] DERIVATION {
+                get {
+                    return ((string[])(PrivateLateBoundObject["__DERIVATION"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string SERVER {
+                get {
+                    return ((string)(PrivateLateBoundObject["__SERVER"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string NAMESPACE {
+                get {
+                    return ((string)(PrivateLateBoundObject["__NAMESPACE"]));
+                }
+            }
+            
+            [Browsable(true)]
+            public string PATH {
+                get {
+                    return ((string)(PrivateLateBoundObject["__PATH"]));
+                }
+            }
+        }
+    }
+}

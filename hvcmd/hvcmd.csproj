@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName></SccProjectName>
+    <SccProvider></SccProvider>
+    <SccAuxPath></SccAuxPath>
+    <SccLocalPath></SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net45;netcoreapp3.1;netstandard2.0</TargetFrameworks>
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>CS0618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Management\Unused\**" />
+    <EmbeddedResource Remove="Management\Unused\**" />
+    <None Remove="Management\Unused\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>
