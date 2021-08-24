@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Management;
 using System.Collections.Generic;
-using System.Xml;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,13 +8,18 @@ using System.Threading.Tasks;
 namespace LTR.HyperV
 {
     using Management.ROOT.virtualization.v2;
-    using System.Globalization;
 
     public static class HyperVTasks
     {
+#if NET46_OR_GREATER || NETSTANDARD || NETCOREAPP
+        internal static readonly string[] EmptyStringArray = Array.Empty<string>();
+#else
+        internal static readonly string[] EmptyStringArray = new string[0];
+#endif
+
         public static async Task<uint> ChangeState(ManagementScope scope, string machineName, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             return await machine.ChangeState(newState, jobProgress, cancellationToken);
@@ -25,12 +29,12 @@ namespace LTR.HyperV
         {
             var result = machine.RequestStateChange((ushort)newState, null, out var jobPath);
 
-            return HyperVTasks.CompleteJob(result, jobPath, jobProgress, cancellationToken);
+            return CompleteJob(result, jobPath, jobProgress, cancellationToken);
         }
 
         public static Task<uint> Shutdown(ManagementScope scope, string machineName, bool forceShutdown)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             using var shutdownComponent = HyperVSupportRoutines.GetShutdownComponent(machine) ??
@@ -75,7 +79,7 @@ namespace LTR.HyperV
 
         public static async Task<uint> DestroyVM(ManagementScope scope, string machineName, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             return await DestroyVM(machine, jobProgress, cancellationToken);
@@ -90,7 +94,7 @@ namespace LTR.HyperV
             return await CompleteJob(result, jobPath, jobProgress, cancellationToken);
         }
 
-        public static async Task<ComputerSystem> CreateVM(ManagementScope scope, string name, VMGeneration generation, string configuration_version, long memory_mb, int vcpus, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+        public static async Task<ComputerSystem> CreateVM(ManagementScope scope, string name, VMGeneration generation, string configuration_version, long? memory_mb, int? vcpus, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
             // Obtain controller for Hyper-V virtualization subsystem
             using var vmMgmtSvc = HyperVSupportRoutines.GetVirtualSystemManagementService(scope);
@@ -100,36 +104,44 @@ namespace LTR.HyperV
 
             // Update the resource settings for the VM.
 
+            var resourceSettings = new List<string>();
+
             // Resource settings are referenced through the Msvm_VirtualSystemSettingData object.
             using var vmSettings = machine.GetVMSystemSettingsData();
 
-            // For memory settings, there is no Dynamic Memory, so reservation, limit and quantity are identical.
-            using var memSettings = vmSettings.GetMemSettings();
-            memSettings.LateBoundObject["VirtualQuantity"] = memory_mb;
-            memSettings.LateBoundObject["Reservation"] = memory_mb;
-            memSettings.LateBoundObject["Limit"] = memory_mb;
-
-            // Update the processor settings for the VM, static assignment of 100% for CPU limit
-            using var procSettings = vmSettings.GetProcSettings();
-            procSettings.LateBoundObject["VirtualQuantity"] = vcpus;
-            procSettings.LateBoundObject["Reservation"] = vcpus;
-            procSettings.LateBoundObject["Limit"] = 100000;
-
-            var resourceSettings = new[] {
-                memSettings.LateBoundObject.GetText(TextFormat.CimDtd20),
-                procSettings.LateBoundObject.GetText(TextFormat.CimDtd20)
-            };
-
-            var result = vmMgmtSvc.ModifyResourceSettings(
-                resourceSettings,
-                out var jobPath,
-                out var results);
-
-            result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
-
-            if ((ReturnCode)result != ReturnCode.Completed)
+            if (memory_mb.HasValue)
             {
-                throw new Exception($"Failed modifying VM, error code: {result}");
+                // For memory settings, there is no Dynamic Memory, so reservation, limit and quantity are identical.
+                using var memSettings = vmSettings.GetMemSettings();
+                memSettings.LateBoundObject["VirtualQuantity"] = memory_mb;
+                memSettings.LateBoundObject["Reservation"] = memory_mb;
+                memSettings.LateBoundObject["Limit"] = memory_mb;
+                resourceSettings.Add(memSettings.LateBoundObject.GetText(TextFormat.CimDtd20));
+            }
+
+            if (vcpus.HasValue)
+            {
+                // Update the processor settings for the VM, static assignment of 100% for CPU limit
+                using var procSettings = vmSettings.GetProcSettings();
+                procSettings.LateBoundObject["VirtualQuantity"] = vcpus;
+                procSettings.LateBoundObject["Reservation"] = vcpus;
+                procSettings.LateBoundObject["Limit"] = 100000;
+                resourceSettings.Add(procSettings.LateBoundObject.GetText(TextFormat.CimDtd20));
+            }
+
+            if (resourceSettings.Count > 0)
+            {
+                var result = vmMgmtSvc.ModifyResourceSettings(
+                    resourceSettings.ToArray(),
+                    out var jobPath,
+                    out _);
+
+                result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+
+                if ((ReturnCode)result != ReturnCode.Completed)
+                {
+                    throw new Exception($"Failed modifying VM, error code: {result}");
+                }
             }
 
             return machine;
@@ -163,7 +175,7 @@ namespace LTR.HyperV
 
             var result = vmMgmtSvc.DefineSystem(
                 null,
-                new string[0],
+                EmptyStringArray,
                 vs_gs_data.LateBoundObject.GetText(TextFormat.CimDtd20),
                 out var jobPath,
                 out var defined_sys);
@@ -190,7 +202,7 @@ namespace LTR.HyperV
                 return machine;
             }
 
-            return HyperVSupportRoutines.GetTargetComputer(name, vmMgmtSvc.Scope);
+            return HyperVSupportRoutines.GetTargetComputer(vmMgmtSvc.Scope, name);
         }
 
         public static async Task<ResourceAllocationSettingData> CreateSCSIforVM(this ComputerSystem machine, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -300,7 +312,7 @@ namespace LTR.HyperV
 
         internal async static Task<uint> CreateSCSIforVM(ManagementScope scope, string machineName, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             await CreateSCSIforVM(machine, jobProgress, cancellationToken);
@@ -399,7 +411,7 @@ namespace LTR.HyperV
 
         public static async Task<uint> AddPhysicalDisk(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int? driveNumber, int hostDriveNumber, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             return await AddPhysicalDisk(machine, controllerType, controllerNumber, driveNumber, hostDriveNumber, jobProgress, cancellationToken);
@@ -415,7 +427,7 @@ namespace LTR.HyperV
 
         public static async Task<uint> AddDriveWithMedia(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int? driveNumber, string storageType, string hostResourcePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             return await AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, storageType, hostResourcePath, jobProgress, cancellationToken);
@@ -423,7 +435,7 @@ namespace LTR.HyperV
 
         public static async Task<uint> AddDriveWithMedia(this ComputerSystem machine, string controllerType, int controllerNumber, int? driveNumber, string storageType, string hostResourcePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var device = HyperVSupportRoutines.GetController(machine, controllerType, controllerNumber) ??
+            using var device = machine.GetController(controllerType, controllerNumber) ??
                 throw new Exception("Controller not found.");
 
             using var drive = HyperVSupportRoutines.GetResourceTemplate(machine.Scope, storageType);
@@ -449,7 +461,7 @@ namespace LTR.HyperV
 
         public static async Task<uint> InsertMedia(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int deviceNumber, string storageType, string imagePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             return await InsertMedia(machine, controllerType, controllerNumber, deviceNumber, storageType, imagePath, jobProgress, cancellationToken);
@@ -457,10 +469,10 @@ namespace LTR.HyperV
 
         public static async Task<uint> InsertMedia(this ComputerSystem machine, string controllerType, int controllerNumber, int deviceNumber, string storageType, string imagePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
         {
-            using var controller = HyperVSupportRoutines.GetController(machine, controllerType, controllerNumber) ??
+            using var controller = machine.GetController(controllerType, controllerNumber) ??
                 throw new Exception($"Controller of type '{controllerType}' not found.");
 
-            using var device = HyperVSupportRoutines.GetControllerChild(controller, deviceNumber);
+            using var device = controller.GetControllerChild(deviceNumber);
             using var media = HyperVSupportRoutines.GetStorageTemplate(machine.Scope, storageType);
             using var managementService = HyperVSupportRoutines.GetVirtualSystemManagementService(machine.Scope);
 
@@ -578,8 +590,6 @@ namespace LTR.HyperV
             {
                 await progressCallback(job, cancellationToken);
             }
-
-            var jobState = (JobState)job.JobState;
 
             if ((JobState)job.JobState != JobState.Completed)
             {

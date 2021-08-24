@@ -43,7 +43,7 @@ namespace LTR.HyperV.Cmd
 				return 0;
 			}
 
-            List<string> argslist = new List<string>(args);
+            var argslist = new List<string>(args);
 			int exitcode;
 
 #if NETFRAMEWORK || NETCOREAPP

@@ -18,10 +18,10 @@ namespace LTR.HyperV
             if (args.Count == 0)
                 throw new Exception("Missing virtual machine name.");
 
-            using var machine = HyperVSupportRoutines.GetTargetComputer(args[0], scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, args[0]) ??
                 throw new Exception("Virtual machine not found.");
 
-            await HyperVTasks.CreateNICforVM(machine, jobProgress, cancellationToken);
+            await machine.CreateNICforVM(jobProgress, cancellationToken);
 
             return 0;
         }
@@ -31,10 +31,10 @@ namespace LTR.HyperV
             if (args.Count == 0)
                 throw new Exception("Missing virtual machine name.");
 
-            using var machine = HyperVSupportRoutines.GetTargetComputer(args[0], scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, args[0]) ??
                 throw new Exception("Virtual machine not found.");
 
-            await HyperVTasks.CreateEmulatedNICforVM(machine, jobProgress, cancellationToken);
+            await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken);
 
             return 0;
         }
@@ -165,7 +165,7 @@ namespace LTR.HyperV
             if (args.Count == 0)
                 throw new Exception("Missing virtual machine name.");
 
-            using var machine = HyperVSupportRoutines.GetTargetComputer(args[0], scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, args[0]) ??
                 throw new Exception("Virtual machine not found.");
 
             HyperVSupportRoutines.ListObjectProperties(machine.LateBoundObject);
@@ -443,55 +443,42 @@ namespace LTR.HyperV
             var machineName = args[0];
             args.RemoveAt(0);
 
-            if (args.Count == 0)
-                throw new Exception("Missing disk image path or physical drive number.");
+            var vhdpath = args.ElementAtOrDefault(0);
 
-            var vhdpath = args[0];
-            args.RemoveAt(0);
+            var memory_mb = args.Count > 1 ? long.Parse(args[1]) : default(long?);
 
-            if (args.Count == 0)
-                throw new Exception("Missing memory limit.");
-
-            long memory_mb = long.Parse(args[0]);
-            args.RemoveAt(0);
-
-            int vcpus = 2;
-            if (args.Count > 0)
-            {
-                vcpus = int.Parse(args[0]);
-                args.RemoveAt(0);
-            }
+            var vcpus = args.Count > 2 ? int.Parse(args[2]) : default(int?);
 
             using var machine = await HyperVTasks.CreateVM(scope, machineName, VMGeneration.G1, null, memory_mb, vcpus, jobProgress, cancellationToken);
 
-            Console.WriteLine($"Created virtual machine {machine.ElementName}.");
+            Console.WriteLine($"Created virtual machine {machine.ElementName} with GUID {machine.Name}.");
 
-            using var synt_nic = await HyperVTasks.CreateNICforVM(machine, jobProgress, cancellationToken);
+            using var synt_nic = await machine.CreateNICforVM(jobProgress, cancellationToken);
 
             Console.WriteLine($"Attached virtual network adapter with address {synt_nic.Address}.");
 
-            using var emul_nic = await HyperVTasks.CreateEmulatedNICforVM(machine, jobProgress, cancellationToken);
+            using var emul_nic = await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken);
 
             Console.WriteLine($"Attached emulated network adapter with address {emul_nic.Address}.");
 
-            await HyperVTasks.AddDriveWithMedia(machine, ResourceSubType.ControllerIDE, 1, 0, ResourceSubType.DVDVirtual, null, jobProgress, cancellationToken);
+            await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 1, 0, ResourceSubType.DVDVirtual, null, jobProgress, cancellationToken);
 
             Console.WriteLine("Attached virtual IDE DVD-ROM drive.");
 
             if (int.TryParse(vhdpath, out var hostDriveNumber))
             {
-                await HyperVTasks.AddPhysicalDisk(machine, ResourceSubType.ControllerIDE, 0, 0, hostDriveNumber, jobProgress, cancellationToken);
+                await machine.AddPhysicalDisk(ResourceSubType.ControllerIDE, 0, 0, hostDriveNumber, jobProgress, cancellationToken);
 
                 Console.WriteLine($"Attached host physical disk {vhdpath} as primary IDE HD.");
             }
-            else
+            else if (vhdpath != null)
             {
                 vhdpath = Path.GetFullPath(vhdpath);
-                await HyperVTasks.AddDriveWithMedia(machine, ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.DiskVirtual, null, jobProgress, cancellationToken);
+                await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.DiskVirtual, null, jobProgress, cancellationToken);
 
                 Console.WriteLine("Created primary IDE HD.");
 
-                await HyperVTasks.InsertMedia(machine, ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.StorageVirtualDisk, vhdpath, jobProgress, cancellationToken);
+                await machine.InsertMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.StorageVirtualDisk, vhdpath, jobProgress, cancellationToken);
 
                 Console.WriteLine($"Attached virtual disk {vhdpath} as primary IDE HD.");
             }
@@ -521,7 +508,7 @@ namespace LTR.HyperV
                 args.RemoveAt(0);
             }
 
-            using var machine = HyperVSupportRoutines.GetTargetComputer(machineName, scope) ??
+            using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
                 throw new Exception("Virtual machine not found.");
 
             if (ctrl == null)

@@ -1,19 +1,16 @@
 ﻿// auth: Sergei Meleshchuk, June 2008.
 // Based in part on powershell code by James O'Naill
 using System;
-using System.Management;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Management;
 using System.Threading;
+using System.Xml;
 
 namespace LTR.HyperV
 {
     using Management.ROOT.virtualization.v2;
-    using ROOT.VIRTUALIZATION.V2.Msvm;
-    using System.Xml;
 
     public class JobFailedException : Exception
     {
@@ -22,8 +19,7 @@ namespace LTR.HyperV
 
         private static string FormatMessage(ConcreteJob Job)
         {
-            string errmsg;
-            errmsg = Job.ErrorDescription;
+            var errmsg = Job.ErrorDescription;
 
             if (errmsg == null)
             {
@@ -84,24 +80,22 @@ namespace LTR.HyperV
                 .Replace("\"", "\\\"");
         }
 
-        public static ComputerSystem GetTargetComputer(string vmElementName, ManagementScope scope) =>
+        public static ComputerSystem GetTargetComputer(ManagementScope scope, string vmElementName) =>
             ComputerSystem.GetInstances(scope, $"ElementName = '{vmElementName}'").OfType<ComputerSystem>().FirstOrDefault();
 
         public static IEnumerable<ComputerSystem> GetTargetComputers(ManagementScope scope) =>
             ComputerSystem.GetInstances(scope, default(string)).OfType<ComputerSystem>();
 
         public static IEnumerable<ComputerSystem> GetVM(ManagementScope scope, string vmElementName) =>
-            ComputerSystem.GetInstances(scope, $"ElementName = '{vmElementName}'")
-                .OfType<ComputerSystem>();
+            ComputerSystem.GetInstances(scope, $"ElementName = '{vmElementName}'").OfType<ComputerSystem>();
 
         public static ComputerSystem GetVM(ManagementScope scope, Guid id) =>
-            ComputerSystem.GetInstances(scope, $"Name = '{id}'")
-                .OfType<ComputerSystem>().FirstOrDefault();
+            ComputerSystem.GetInstances(scope, $"Name = '{id}'").OfType<ComputerSystem>().FirstOrDefault();
 
         public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
             sequence.
                 OfType<ManagementObject>().
-                Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword) >= 0)).
+                Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)).
                 ToArray();
 
         public static VMGeneration GetVMGeneration(ManagementScope scope, string machine)
@@ -109,9 +103,7 @@ namespace LTR.HyperV
             using var vm = GetVM(scope, machine).FirstOrDefault() ??
                 throw new Exception("Virtual machine not found.");
 
-            using var vm_settings = vm.GetVMSystemSettingsData();
-
-            return vm_settings.GetVMGeneration();
+            return vm.GetVMGeneration();
         }
 
         public static VMGeneration GetVMGeneration(this ComputerSystem machine)
@@ -144,13 +136,13 @@ namespace LTR.HyperV
         }
 
         public static ResourceAllocationSettingData GetFloppyController(this ComputerSystem machine) =>
-            GetController(machine, ResourceSubType.ControllerFD, 0);
+            machine.GetController(ResourceSubType.ControllerFD, 0);
 
         public static ResourceAllocationSettingData GetIDEController(this ComputerSystem machine, int controllerNumber) =>
-            GetController(machine, ResourceSubType.ControllerIDE, controllerNumber);
+            machine.GetController(ResourceSubType.ControllerIDE, controllerNumber);
 
         public static ResourceAllocationSettingData GetSCSIController(this ComputerSystem machine, int controllerNumber) =>
-            GetController(machine, ResourceSubType.ControllerSCSI, controllerNumber);
+            machine.GetController(ResourceSubType.ControllerSCSI, controllerNumber);
 
         public static SerialPortSettingData[] GetSerialPorts(this ComputerSystem machine)
         {
@@ -313,7 +305,7 @@ namespace LTR.HyperV
 
         public static string GetVMDiskInstanceID(this ComputerSystem machine, string controllerType, int controllerNumber, int deviceNumber)
         {
-            using var controller = GetController(machine, controllerType, controllerNumber) ??
+            using var controller = machine.GetController(controllerType, controllerNumber) ??
                 throw new Exception($"Controller of type '{controllerType}' not found.");
 
             using var device = GetControllerChild(controller, deviceNumber) ??
@@ -324,7 +316,7 @@ namespace LTR.HyperV
 
         public static int GetControllerNextDeviceNumber(this ComputerSystem machine, string controllerType, int controllerNumber)
         {
-            using var controller = GetController(machine, controllerType, controllerNumber) ??
+            using var controller = machine.GetController(controllerType, controllerNumber) ??
                 throw new Exception($"Controller of type '{controllerType}' not found.");
 
             var where = $"parent Like '%instanceId=\"{controller.InstanceID.Replace(@"\", @"\\\\")}\"%'";
@@ -345,7 +337,7 @@ namespace LTR.HyperV
 
         public static ManagementPath GetVMDiskManagementPath(this ComputerSystem machine, string controllerType, int controllerNumber, int deviceNumber)
         {
-            using var controller = GetController(machine, controllerType, controllerNumber) ??
+            using var controller = machine.GetController(controllerType, controllerNumber) ??
                 throw new Exception($"Controller of type '{controllerType}' not found.");
 
             using var device = GetControllerChild(controller, deviceNumber) ??
@@ -490,7 +482,7 @@ namespace LTR.HyperV
 
         public static EthernetPortAllocationSettingData CreateInternalEthernetPort(ManagementScope scope, string name)
         {
-            using var hostComputerSystem = HyperVSupportRoutines.GetTargetComputer(Environment.MachineName, scope);
+            using var hostComputerSystem = HyperVSupportRoutines.GetTargetComputer(scope, Environment.MachineName);
             using var default_settings = EthernetPortAllocationSettingData.GetInstances(scope, "InstanceID LIKE \"%Default\"").OfType<EthernetPortAllocationSettingData>().First();
 
             var settings = new EthernetPortAllocationSettingData((ManagementBaseObject)default_settings.LateBoundObject.Clone());
@@ -596,7 +588,7 @@ namespace LTR.HyperV
             string vmName,
             ManagementScope scope)
         {
-            using var computerSystem = HyperVSupportRoutines.GetTargetComputer(vmName, scope);
+            using var computerSystem = HyperVSupportRoutines.GetTargetComputer(scope, vmName);
 
             var systemDevices = ((ManagementObject)computerSystem.LateBoundObject).GetRelated
             (
