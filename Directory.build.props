@@ -4,7 +4,6 @@
     <OutputPath>..\$(Configuration)\</OutputPath>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <OutputPath>..\$(Configuration)\</OutputPath>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -12,9 +11,14 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <LangVersion Condition="'$(MSBuildProjectExtension)' == '.csproj'">9.0</LangVersion>
-    <OptionStrict Condition="'$(MSBuildProjectExtension)' == '.vbproj'">On</OptionStrict>
+    <LangVersion>Latest</LangVersion>
     <DelaySign>false</DelaySign>
+    <RollForward>LatestMajor</RollForward>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageOutputPath>$(LocalNuGetPath)\$(Configuration)</PackageOutputPath>
+    <PackageId>LTR.HyperV</PackageId>
+    <Company>LTR Data</Company>
+    <Authors>Olof Lagerkvist</Authors>
   </PropertyGroup>
 
 </Project>
