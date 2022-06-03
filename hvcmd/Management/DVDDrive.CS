@@ -1,4 +1,4 @@
-﻿namespace ROOT.VIRTUALIZATION.V2.Msvm; 
+﻿namespace LTR.HyperV.Management.ROOT.virtualization.v2; 
 using System;
 using System.ComponentModel;
 using System.Management;
