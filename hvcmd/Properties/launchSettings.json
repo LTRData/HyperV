@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "hvcmd": {
-      "commandName": "Project",
-      "commandLineArgs": "createvm start testvm"
-    }
-  }
-}
