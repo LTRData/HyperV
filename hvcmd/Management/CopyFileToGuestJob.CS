@@ -1,11 +1,8 @@
-﻿namespace LTR.HyperV.Management.ROOT.virtualization.v2; 
-using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Management;
 using System.Collections;
-using System.Globalization;
 
-
+namespace LTR.HyperV.Management.ROOT.virtualization.v2;
 // Funktionerna ShouldSerialize<PropertyName> är funktioner som används av Egenskapsgranskning i VS för att kontrollera om en viss egenskap måste serialiseras. Dessa funktioner läggs till för alla ValueType-egenskaper (egenskaper av typen Int32, BOOL m.fl. som inte kan anges till Null). Dessa funktioner använder funktionen Is<PropertyName>Null. Funktionerna används också vid implementering av TypeConverter när NULL-värde kontrolleras för egenskapen, så att ett tomt värde kan visas i Egenskapsgranskning om Dra och släpp används i Visual Studio.
 // Funktionerna Is<PropertyName>Null() används för att kontrollera om en egenskap är NULL.
 // Funktionerna Reset<PropertyName> läggs till för Read/Write-egenskaper som kan ha värdet NULL. Dessa funktioner används i Egenskapsgranskning i VS-designer för att ange en egenskap till NULL.

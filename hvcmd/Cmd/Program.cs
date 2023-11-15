@@ -1,50 +1,46 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Management;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using LTR.HyperV.Management.ROOT.virtualization.v2;
+using static LTR.HyperV.HyperVCommands;
 
 namespace LTR.HyperV.Cmd;
 
-using Management.ROOT.virtualization.v2;
-using static HyperVCommands;
-
 public static class Program
-	{
+{
     [STAThread]
-		internal static int Main(string[] args)
-		{
-			if (args.Length == 0 || args[0] == "/?")
-			{
-				Console.WriteLine(string.Join(
-                Environment.NewLine, new[]
-                {
-                    @"HVCMD [\\host] LIST",
-					    @"HVCMD [\\host] QUERY machine",
-					    @"HVCMD [\\host] START machine",
-					    @"HVCMD [\\host] SAVESTATE machine",
-					    @"HVCMD [\\host] PAUSE machine",
-					    @"HVCMD [\\host] RESET machine",
-					    @"HVCMD [\\host] TURNOFF machine",
-					    @"HVCMD [\\host] SHUTDOWN machine [FORCE]",
-                    @"HVCMD [\\host] FD machine imagepath",
-                    @"HVCMD [\\host] IDEDVD machine imagepath devicenumber [controllernumber]",
-                    @"HVCMD [\\host] SCSIDVD machine imagepath devicenumber [controllernumber]",
-                    @"HVCMD [\\host] IDEVHD machine imagepath devicenumber [controllernumber]",
-                    @"HVCMD [\\host] SCSIVHD machine imagepath devicenumber [controllernumber]",
-                    @"HVCMD [\\host] IDEPHD machine hostdrivenumber [controllernumber]",
-                    @"HVCMD [\\host] SCSIPHD machine hostdrivenumber [controllernumber]",
-                    @"HVCMD [\\host] CREATEVM machine vhdpath memorymb cpus",
-                    @"HVCMD [\\host] CONVERTVHD sourceimage targetimage FIXED|DYNAMIC VHD|VHDX"
-                }));
-				return 0;
-			}
+    internal static int Main(string[] args)
+    {
+        if (args.Length == 0 || args[0] == "/?")
+        {
+            Console.WriteLine(string.Join(
+            Environment.NewLine,
+            [
+                @"HVCMD [\\host] LIST",
+                @"HVCMD [\\host] QUERY machine",
+                @"HVCMD [\\host] START machine",
+                @"HVCMD [\\host] SAVESTATE machine",
+                @"HVCMD [\\host] PAUSE machine",
+                @"HVCMD [\\host] RESET machine",
+                @"HVCMD [\\host] TURNOFF machine",
+                @"HVCMD [\\host] SHUTDOWN machine [FORCE]",
+                @"HVCMD [\\host] FD machine imagepath",
+                @"HVCMD [\\host] IDEDVD machine imagepath devicenumber [controllernumber]",
+                @"HVCMD [\\host] SCSIDVD machine imagepath devicenumber [controllernumber]",
+                @"HVCMD [\\host] IDEVHD machine imagepath devicenumber [controllernumber]",
+                @"HVCMD [\\host] SCSIVHD machine imagepath devicenumber [controllernumber]",
+                @"HVCMD [\\host] IDEPHD machine hostdrivenumber [controllernumber]",
+                @"HVCMD [\\host] SCSIPHD machine hostdrivenumber [controllernumber]",
+                @"HVCMD [\\host] CREATEVM machine vhdpath memorymb cpus",
+                @"HVCMD [\\host] CONVERTVHD sourceimage targetimage FIXED|DYNAMIC VHD|VHDX"
+            ]));
+            return 0;
+        }
 
         var argslist = new List<string>(args);
-			int exitcode;
+        int exitcode;
 
 #if NETFRAMEWORK || NETCOREAPP
         if (argslist.Count > 0 && argslist[0].Equals("/TRACE", StringComparison.InvariantCultureIgnoreCase))
@@ -55,10 +51,10 @@ public static class Program
 #endif
 
         try
-			{
-				var rc = CommandParser(argslist).Result;
+        {
+            var rc = CommandParser(argslist).Result;
 
-				if (HyperVSupportRoutines.Messages.TryGetValue(rc, out var message))
+            if (HyperVSupportRoutines.Messages.TryGetValue(rc, out var message))
             {
                 Console.WriteLine(message);
             }
@@ -68,14 +64,14 @@ public static class Program
             }
 
             exitcode = unchecked((int)rc);
-			}
-			catch (Exception ex)
-			{
+        }
+        catch (Exception ex)
+        {
             Trace.WriteLine(ex.ToString());
 #if DEBUG
             Console.Error.WriteLine(ex.ToString());
 #else
-            Console.Error.WriteLine(ex.JoinMessages());
+        Console.Error.WriteLine(ex.JoinMessages());
 #endif
 
             if (ex is JobFailedException)
@@ -94,7 +90,7 @@ public static class Program
         }
 
         return exitcode;
-		}
+    }
 
     public static Task<uint> CommandParser(List<string> args)
     {
@@ -165,7 +161,7 @@ public static class Program
         if ((JobState)Job.JobState is JobState.Starting
             or JobState.Running)
         {
-            Console.Write("\r");
+            Console.Write('\r');
             return Task.Delay(500, cancellationToken);
         }
         else

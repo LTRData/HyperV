@@ -554,5 +554,4 @@ public static class HyperVCommands
 
         return Task.FromResult(0u);
     }
-
 }

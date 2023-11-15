@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LTR.HyperV;
+﻿namespace LTR.HyperV;
 
 public enum VMGeneration
 {

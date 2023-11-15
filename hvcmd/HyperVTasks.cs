@@ -5,18 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using LTR.HyperV.Management.ROOT.virtualization.v2;
+
 namespace LTR.HyperV;
-
-using Management.ROOT.virtualization.v2;
-
 public static class HyperVTasks
 {
-#if NET46_OR_GREATER || NETSTANDARD || NETCOREAPP
-    internal static readonly string[] EmptyStringArray = Array.Empty<string>();
-#else
-    internal static readonly string[] EmptyStringArray = new string[0];
-#endif
-
     public static async Task<uint> ChangeState(ManagementScope scope, string machineName, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
     {
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
@@ -132,7 +125,7 @@ public static class HyperVTasks
         if (resourceSettings.Count > 0)
         {
             var result = vmMgmtSvc.ModifyResourceSettings(
-                resourceSettings.ToArray(),
+                [.. resourceSettings],
                 out var jobPath,
                 out _);
 
@@ -175,7 +168,7 @@ public static class HyperVTasks
 
         var result = vmMgmtSvc.DefineSystem(
             null,
-            EmptyStringArray,
+            [],
             vs_gs_data.LateBoundObject.GetText(TextFormat.CimDtd20),
             out var jobPath,
             out var defined_sys);
@@ -324,13 +317,13 @@ public static class HyperVTasks
         CreateEthernetSwitch(scope, name, null, jobProgress, cancellationToken);
 
     public static Task<uint> CreateEthernetExternalOnlySwitch(ManagementScope scope, string name, string adapter_name, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken) =>
-        CreateEthernetSwitch(scope, name, new[] { HyperVSupportRoutines.CreateExternalEthernetPort(scope, $"{name}_ExternalPort", adapter_name) }, jobProgress, cancellationToken);
+        CreateEthernetSwitch(scope, name, [HyperVSupportRoutines.CreateExternalEthernetPort(scope, $"{name}_ExternalPort", adapter_name)], jobProgress, cancellationToken);
 
     public static Task<uint> CreateEthernetExternalSwitch(ManagementScope scope, string name, string adapter_name, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken) =>
-        CreateEthernetSwitch(scope, name, new[] { HyperVSupportRoutines.CreateExternalEthernetPort(scope, $"{name}_ExternalPort", adapter_name), HyperVSupportRoutines.CreateInternalEthernetPort(scope, $"{name}_InternalPort") }, jobProgress, cancellationToken);
+        CreateEthernetSwitch(scope, name, [HyperVSupportRoutines.CreateExternalEthernetPort(scope, $"{name}_ExternalPort", adapter_name), HyperVSupportRoutines.CreateInternalEthernetPort(scope, $"{name}_InternalPort")], jobProgress, cancellationToken);
 
     public static Task<uint> CreateEthernetInternalSwitch(ManagementScope scope, string name, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken) =>
-        CreateEthernetSwitch(scope, name, new[] { HyperVSupportRoutines.CreateInternalEthernetPort(scope, $"{name}_InternalPort") }, jobProgress, cancellationToken);
+        CreateEthernetSwitch(scope, name, [HyperVSupportRoutines.CreateInternalEthernetPort(scope, $"{name}_InternalPort")], jobProgress, cancellationToken);
 
     public async static Task<uint> CreateEthernetSwitch(ManagementScope scope, string name, EthernetPortAllocationSettingData[] ports, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
     {
@@ -368,7 +361,7 @@ public static class HyperVTasks
         // Resource settings are referenced through the Msvm_VirtualSystemSettingData object.
         using var vmsettings = machine.GetVMSystemSettingsData();
 
-        var result = mgmtsvc.AddResourceSettings(vmsettings.Path, new[] { settings.LateBoundObject.GetText(TextFormat.WmiDtd20) }, out var jobPath, out var results);
+        var result = mgmtsvc.AddResourceSettings(vmsettings.Path, [settings.LateBoundObject.GetText(TextFormat.WmiDtd20)], out var jobPath, out var results);
 
         result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
 
@@ -538,7 +531,7 @@ public static class HyperVTasks
 
         using var managementService = HyperVSupportRoutines.GetVirtualSystemManagementService(device.Scope);
 
-        var result = managementService.RemoveResourceSettings(new[] { resource.Path }, out var job);
+        var result = managementService.RemoveResourceSettings([resource.Path], out var job);
 
         return await CompleteJob(result, job, jobProgress, cancellationToken);
     }
@@ -616,5 +609,4 @@ public static class HyperVTasks
 
         return (uint)ReturnCode.Completed;
     }
-
 }

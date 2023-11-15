@@ -57,7 +57,6 @@ public class JobFailedException : Exception
     {
         ErrorCode = Job.ErrorCode;
     }
-
 }
 
 public static class HyperVSupportRoutines
@@ -218,7 +217,6 @@ public static class HyperVSupportRoutines
 
             Console.WriteLine();
         }
-
     }
 
     public static void ListControllerChildren(this ComputerSystem machine, string controllerPath, string className)
@@ -246,7 +244,6 @@ public static class HyperVSupportRoutines
 
                 Console.WriteLine();
             }
-
         }
     }
 
@@ -779,7 +776,6 @@ public static class HyperVSupportRoutines
                         }
                     }
                 }
-
             }
         }
         return RASD;

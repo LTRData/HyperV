@@ -8,10 +8,14 @@
     <DelaySign>false</DelaySign>
     <RollForward>LatestMajor</RollForward>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
-    <PackageOutputPath>$(LocalNuGetPath)\$(Configuration)</PackageOutputPath>
-    <PackageId>LTR.HyperV</PackageId>
+    <PackageOutputPath>$(LocalNuGetPath)</PackageOutputPath>
+    <PackageId>LTRData.HyperV</PackageId>
     <Company>LTR Data</Company>
     <Authors>Olof Lagerkvist</Authors>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>1591;0618</NoWarn>
   </PropertyGroup>
 
 </Project>
