@@ -38,7 +38,6 @@ public static class ResourceType
     public const ushort PowerSupply = 28;
     public const ushort CoolingDevice = 29;
 
-
     public const ushort DisketteController = 1;
 }
 

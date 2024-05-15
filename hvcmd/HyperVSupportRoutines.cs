@@ -94,11 +94,19 @@ public static class HyperVSupportRoutines
     public static ComputerSystem GetVM(ManagementScope scope, Guid id) =>
         ComputerSystem.GetInstances(scope, $"Name = '{id}'").OfType<ComputerSystem>().FirstOrDefault();
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
+        sequence.
+            OfType<ManagementObject>().
+            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase))).
+            ToArray();
+#else
     public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
         sequence.
             OfType<ManagementObject>().
             Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)).
             ToArray();
+#endif
 
     public static VMGeneration GetVMGeneration(ManagementScope scope, string machine)
     {
@@ -122,7 +130,11 @@ public static class HyperVSupportRoutines
         if (typestr != null &&
             typestr.StartsWith("Microsoft:Hyper-V:SubType:", StringComparison.OrdinalIgnoreCase))
         {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            return (VMGeneration)int.Parse(typestr.AsSpan("Microsoft:Hyper-V:SubType:".Length), 0, NumberFormatInfo.InvariantInfo);
+#else
             return (VMGeneration)int.Parse(typestr.Substring("Microsoft:Hyper-V:SubType:".Length), NumberFormatInfo.InvariantInfo);
+#endif
         }
 
         return VMGeneration.G1;
@@ -666,7 +678,6 @@ public static class HyperVSupportRoutines
             throw new Exception($"Cannot find settings for virtual machine {vm.GetPropertyValue("Name")}");
     }
 
-
     enum ValueRole
     {
         Default = 0,
@@ -681,7 +692,6 @@ public static class HyperVSupportRoutines
         Maximum = 2,
         Increment = 3
     }
-
 
     //
     // Get RASD definitions
@@ -714,28 +724,21 @@ public static class HyperVSupportRoutines
         //Get pool resource allocation ability
         if (poolResources.Count == 1)
         {
-            foreach (ManagementObject poolResource in poolResources)
+            foreach (var settingData in from ManagementObject poolResource in poolResources
+                                        let allocationCapabilities = poolResource.GetRelated("Msvm_AllocationCapabilities")
+                                        from ManagementObject allocationCapability in allocationCapabilities
+                                        let settingDatas = allocationCapability.GetRelationships("Msvm_SettingsDefineCapabilities")
+                                        from ManagementObject settingData in settingDatas
+                                        where Convert.ToInt16(settingData["ValueRole"]) == (ushort)ValueRole.Default
+                                        select settingData)
             {
-                var allocationCapabilities = poolResource.GetRelated("Msvm_AllocationCapabilities");
-                foreach (ManagementObject allocationCapability in allocationCapabilities)
-                {
-                    var settingDatas = allocationCapability.GetRelationships("Msvm_SettingsDefineCapabilities");
-                    foreach (ManagementObject settingData in settingDatas)
-                    {
-
-                        if (Convert.ToInt16(settingData["ValueRole"]) == (ushort)ValueRole.Default)
-                        {
-                            RASD = new ManagementObject(settingData["PartComponent"].ToString());
-                            break;
-                        }
-                    }
-                }
+                RASD = new ManagementObject(settingData["PartComponent"].ToString());
+                break;
             }
         }
 
         return RASD;
     }
-
 
     public static ManagementObject GetResourceAllocationsettingData(
         ManagementObject vm,
@@ -746,38 +749,38 @@ public static class HyperVSupportRoutines
         ManagementObject RASD = null;
         using var settingDatas = vm.GetRelated("Msvm_VirtualSystemsettingData");
 
-        foreach (ManagementObject settingData in settingDatas)
+        foreach (var settingData in settingDatas.OfType<ManagementObject>())
         {
             using (settingData)
             {
                 //retrieve the RASD
                 using var RASDs = settingData.GetRelated("Msvm_ResourceAllocationsettingData");
-
-                foreach (ManagementObject rasdInstance in RASDs)
+                
+                foreach (var rasdInstance in RASDs
+                    .OfType<ManagementObject>()
+                    .Where(rasdInstance => Convert.ToUInt16(rasdInstance["ResourceType"]) == resourceType))
                 {
-                    if (Convert.ToUInt16(rasdInstance["ResourceType"]) == resourceType)
+                    //found the matching type
+                    if (resourceType == ResourceType.Other)
                     {
-                        //found the matching type
-                        if (resourceType == ResourceType.Other)
+                        if (rasdInstance["OtherResourceType"].ToString() == otherResourceType)
                         {
-                            if (rasdInstance["OtherResourceType"].ToString() == otherResourceType)
-                            {
-                                RASD = rasdInstance;
-                                break;
-                            }
+                            RASD = rasdInstance;
+                            break;
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (rasdInstance["ResourceSubType"].ToString() == resourceSubType)
                         {
-                            if (rasdInstance["ResourceSubType"].ToString() == resourceSubType)
-                            {
-                                RASD = rasdInstance;
-                                break;
-                            }
+                            RASD = rasdInstance;
+                            break;
                         }
                     }
                 }
             }
         }
+
         return RASD;
     }
 
@@ -791,6 +794,7 @@ public static class HyperVSupportRoutines
         {
             throw new FormatException();
         }
+
         Console.WriteLine($"Contents of class {nodelist[0].Value}:");
 
         nodelist = doc.SelectNodes("//PROPERTY");
@@ -878,7 +882,6 @@ public static class HyperVSupportRoutines
 
 }
 
-
 public enum VirtualHardDiskType
 {
     Fixed = 2,
@@ -905,5 +908,4 @@ internal static class Constants
 
     internal const string RASD_CLASS = "MsVM_ResourceAllocationSettingData";
 }
-
 

@@ -436,7 +436,6 @@ public static class HyperVCommands
         return HyperVTasks.InsertMedia(scope, machineName, ResourceSubType.ControllerSCSI, controllerNumber, deviceNumber, ResourceSubType.StorageVirtualDisk, imagePath, jobProgress, cancellationToken);
     }
 
-
     public static Task<uint> cmdDestroyVM(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
