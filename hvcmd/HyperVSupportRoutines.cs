@@ -3,14 +3,19 @@
 using LTR.HyperV.Management.ROOT.virtualization.v2;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Management;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Xml;
 
 namespace LTR.HyperV;
 
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 public class JobFailedException : Exception
 {
     private static string FormatMessage(ManagementObject Job) =>
@@ -59,6 +64,9 @@ public class JobFailedException : Exception
     }
 }
 
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 public static class HyperVSupportRoutines
 {
     public static ManagementScope GetManagementScope(string remoteMachine) =>
@@ -96,16 +104,14 @@ public static class HyperVSupportRoutines
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
-        sequence.
+        [.. sequence.
             OfType<ManagementObject>().
-            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase))).
-            ToArray();
+            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase)))];
 #else
     public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
-        sequence.
+        [.. sequence.
             OfType<ManagementObject>().
-            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)).
-            ToArray();
+            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0))];
 #endif
 
     public static VMGeneration GetVMGeneration(ManagementScope scope, string machine)
@@ -164,7 +170,7 @@ public static class HyperVSupportRoutines
 
         var where = $"resourceSubtype='{ResourceSubType.SerialPort}' and instanceId Like 'Microsoft:{vmName}%'";
 
-        return SerialPortSettingData.GetInstances(machine.Scope, where).OfType<SerialPortSettingData>().ToArray();
+        return [.. SerialPortSettingData.GetInstances(machine.Scope, where).OfType<SerialPortSettingData>()];
     }
 
     public static RdvComponentSettingData GetRdvComponentSettings(this VirtualSystemSettingData vmSettings)
@@ -529,16 +535,15 @@ public static class HyperVSupportRoutines
         VirtualEthernetSwitch.GetInstances(scope, $"Name = \"{id}\"").OfType<VirtualEthernetSwitch>().FirstOrDefault();
 
     public static VirtualEthernetSwitch[] GetEthernetSwitches(ManagementScope scope) =>
-        VirtualEthernetSwitch.GetInstances(scope, string.Empty).OfType<VirtualEthernetSwitch>().ToArray();
+        [.. VirtualEthernetSwitch.GetInstances(scope, string.Empty).OfType<VirtualEthernetSwitch>()];
 
     public static EthernetSwitchPort[] GetEthernetSwitchPorts(this VirtualEthernetSwitch sw) =>
-        (sw.LateBoundObject as ManagementObject)
+        [.. (sw.LateBoundObject as ManagementObject)
             .GetRelated("Msvm_EthernetSwitchPort",
                         "Msvm_SystemDevice",
                         null, null, null, null, false, null)
             .OfType<ManagementBaseObject>()
-            .Select(mbo => new EthernetSwitchPort(mbo))
-            .ToArray();
+            .Select(mbo => new EthernetSwitchPort(mbo))];
 
     public static EthernetPortAllocationSettingData GetEthernetSwitchPortSettingsData(this EthernetSwitchPort port) =>
         (port.LateBoundObject as ManagementObject)
@@ -562,16 +567,14 @@ public static class HyperVSupportRoutines
     }
 
     public static ExternalEthernetPort[] GetEthernetSwitchExternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
-        settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
+        [.. settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
             .Where(mo => mo.ClassPath.ClassName.Equals(ExternalEthernetPort.CreatedClassName, StringComparison.OrdinalIgnoreCase))
-            .Select(mo => new ExternalEthernetPort(mo))
-            .ToArray();
+            .Select(mo => new ExternalEthernetPort(mo))];
 
     public static ComputerSystem[] GetEthernetSwitchInternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
-        settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
+        [.. settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
             .Where(mo => mo.ClassPath.ClassName.Equals(ComputerSystem.CreatedClassName, StringComparison.OrdinalIgnoreCase))
-            .Select(mo => new ComputerSystem(mo))
-            .ToArray();
+            .Select(mo => new ComputerSystem(mo))];
 
     public static string DefaultSwitchId { get; } = "C08CB7B8-9B3C-408E-8E30-5E16A3AEB444";
 
@@ -808,7 +811,7 @@ public static class HyperVSupportRoutines
         }
     }
 
-    public static readonly Dictionary<uint, string> Messages = new()
+    public static ReadOnlyDictionary<uint, string> Messages { get; } = new(new Dictionary<uint, string>()
     {
         {
             0u,
@@ -878,8 +881,7 @@ public static class HyperVSupportRoutines
             32782u,
             "A system shutdown is in progress."
         }
-    };
-
+    });
 }
 
 public enum VirtualHardDiskType

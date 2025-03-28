@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using LTR.HyperV.Management.ROOT.virtualization.v2;
@@ -8,6 +9,9 @@ using static LTR.HyperV.HyperVCommands;
 
 namespace LTR.HyperV.Cmd;
 
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 public static class Program
 {
     [STAThread]

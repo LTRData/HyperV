@@ -2,14 +2,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>LTR.HyperV</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net45;net6.0-windows;net8.0-windows;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net8.0;net9.0;netstandard2.0</TargetFrameworks>
     <Deterministic>false</Deterministic>
     <Title>LTR.HyperV</Title>
     <Company>LTR Data</Company>
     <Product>LTR.HyperV</Product>
-    <Copyright>Copyright © Olof Lagerkvist, LTR Data 2012-2023</Copyright>
-    <Version>2.0.2</Version>
+    <Copyright>Copyright © Olof Lagerkvist, LTR Data 2012-2025</Copyright>
+    <Version>2.0.3</Version>
     <AssemblyVersion>2.0.*</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <PackageVersion>$(Version)</PackageVersion>

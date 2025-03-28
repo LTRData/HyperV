@@ -4,10 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using LTR.HyperV.Management.ROOT.virtualization.v2;
+using System.Runtime.Versioning;
 
 namespace LTR.HyperV;
+
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 public static class HyperVTasks
 {
     public static async Task<uint> ChangeState(ManagementScope scope, string machineName, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -413,7 +417,7 @@ public static class HyperVTasks
     public static Task<uint> AddPhysicalDisk(this ComputerSystem machine, string controllerType, int controllerNumber, int? driveNumber, int hostDriveNumber, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
     {
         using var hostDrive = HyperVSupportRoutines.GetHostDiskDrive(machine.Scope, hostDriveNumber) ??
-            throw new Exception($"Cannot find drive number {hostDriveNumber} on host. Please verify that the disk is attached and is in offline mode.");
+            throw new Exception($"Cannot find physical disk number {hostDriveNumber} on host. Please verify that the disk is attached and is in offline mode.");
 
         return AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, ResourceSubType.DiskPhysical, hostDrive.Path.Path, jobProgress, cancellationToken);
     }
