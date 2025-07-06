@@ -754,31 +754,30 @@ public static class HyperVSupportRoutines
 
         foreach (var settingData in settingDatas.OfType<ManagementObject>())
         {
-            using (settingData)
+            using var _ = settingData;
+
+            //retrieve the RASD
+            using var RASDs = settingData.GetRelated("Msvm_ResourceAllocationsettingData");
+
+            foreach (var rasdInstance in RASDs
+                .OfType<ManagementObject>()
+                .Where(rasdInstance => Convert.ToUInt16(rasdInstance["ResourceType"]) == resourceType))
             {
-                //retrieve the RASD
-                using var RASDs = settingData.GetRelated("Msvm_ResourceAllocationsettingData");
-                
-                foreach (var rasdInstance in RASDs
-                    .OfType<ManagementObject>()
-                    .Where(rasdInstance => Convert.ToUInt16(rasdInstance["ResourceType"]) == resourceType))
+                //found the matching type
+                if (resourceType == ResourceType.Other)
                 {
-                    //found the matching type
-                    if (resourceType == ResourceType.Other)
+                    if (rasdInstance["OtherResourceType"].ToString() == otherResourceType)
                     {
-                        if (rasdInstance["OtherResourceType"].ToString() == otherResourceType)
-                        {
-                            RASD = rasdInstance;
-                            break;
-                        }
+                        RASD = rasdInstance;
+                        break;
                     }
-                    else
+                }
+                else
+                {
+                    if (rasdInstance["ResourceSubType"].ToString() == resourceSubType)
                     {
-                        if (rasdInstance["ResourceSubType"].ToString() == resourceSubType)
-                        {
-                            RASD = rasdInstance;
-                            break;
-                        }
+                        RASD = rasdInstance;
+                        break;
                     }
                 }
             }

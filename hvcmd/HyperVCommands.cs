@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LTR.HyperV;
 
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 public static class HyperVCommands
 {
     public async static Task<uint> cmdAddVNIC(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -21,7 +25,7 @@ public static class HyperVCommands
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, args[0]) ??
             throw new Exception("Virtual machine not found.");
 
-        await machine.CreateNICforVM(jobProgress, cancellationToken);
+        await machine.CreateNICforVM(jobProgress, cancellationToken).ConfigureAwait(false);
 
         return 0;
     }
@@ -36,7 +40,7 @@ public static class HyperVCommands
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, args[0]) ??
             throw new Exception("Virtual machine not found.");
 
-        await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken);
+        await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken).ConfigureAwait(false);
 
         return 0;
     }
@@ -52,7 +56,7 @@ public static class HyperVCommands
 
         var ports = new[] { HyperVSupportRoutines.CreateInternalEthernetPort(scope, $"{switch_name}_InternalPort") };
 
-        await HyperVTasks.CreateEthernetSwitch(scope, switch_name, ports, jobProgress, cancellationToken);
+        await HyperVTasks.CreateEthernetSwitch(scope, switch_name, ports, jobProgress, cancellationToken).ConfigureAwait(false);
 
         return 0;
     }
@@ -98,6 +102,7 @@ public static class HyperVCommands
         {
             throw new Exception("Missing source image file path.");
         }
+
         var sourcePath = args[0];
         args.RemoveAt(0);
 
@@ -105,6 +110,7 @@ public static class HyperVCommands
         {
             throw new Exception("Missing target image file path.");
         }
+
         var targetPath = args[0];
         args.RemoveAt(0);
 
@@ -112,6 +118,7 @@ public static class HyperVCommands
         {
             throw new Exception("Missing image dynamic/fixed type specification.");
         }
+
         var diskType = args[0];
         args.RemoveAt(0);
 
@@ -119,6 +126,7 @@ public static class HyperVCommands
         {
             throw new Exception("Missing image vhd/vhdx format specification.");
         }
+
         var diskFormat = args[0];
         args.RemoveAt(0);
 
@@ -147,18 +155,19 @@ public static class HyperVCommands
     {
         foreach (var obj in HyperVSupportRoutines.GetTargetComputers(scope))
         {
-            using (obj)
+            using var _obj = obj;
+
+            Console.Write($"{obj.ElementName}: ");
+            var machinestate = (VirtualMachineState)obj.EnabledState;
+            Console.Write(machinestate.ToString().Replace('_', ' '));
+            var OnTimeInMilliseconds = obj.OnTimeInMilliseconds;
+
+            if (OnTimeInMilliseconds != 0)
             {
-                Console.Write($"{obj.ElementName}: ");
-                var machinestate = (VirtualMachineState)obj.EnabledState;
-                Console.Write(machinestate.ToString().Replace('_', ' '));
-                var OnTimeInMilliseconds = obj.OnTimeInMilliseconds;
-                if (OnTimeInMilliseconds != 0)
-                {
-                    Console.Write($" (Uptime {TimeSpan.FromMilliseconds(OnTimeInMilliseconds):g})");
-                }
-                Console.WriteLine();
+                Console.Write($" (Uptime {TimeSpan.FromMilliseconds(OnTimeInMilliseconds):g})");
             }
+
+            Console.WriteLine();
         }
 
         return Task.FromResult(0u);
@@ -478,36 +487,36 @@ public static class HyperVCommands
 
         var vcpus = args.Count > 2 ? int.Parse(args[2]) : default(int?);
 
-        using var machine = await HyperVTasks.CreateVM(scope, machineName, VMGeneration.G1, null, memory_mb, vcpus, jobProgress, cancellationToken);
+        using var machine = await HyperVTasks.CreateVM(scope, machineName, VMGeneration.G1, null, memory_mb, vcpus, jobProgress, cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine($"Created virtual machine {machine.ElementName} with GUID {machine.Name}.");
 
-        using var synt_nic = await machine.CreateNICforVM(jobProgress, cancellationToken);
+        using var synt_nic = await machine.CreateNICforVM(jobProgress, cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine($"Attached virtual network adapter with address {synt_nic.Address}.");
 
-        using var emul_nic = await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken);
+        using var emul_nic = await machine.CreateEmulatedNICforVM(jobProgress, cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine($"Attached emulated network adapter with address {emul_nic.Address}.");
 
-        await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 1, 0, ResourceSubType.DVDVirtual, null, jobProgress, cancellationToken);
+        await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 1, 0, ResourceSubType.DVDVirtual, null, jobProgress, cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine("Attached virtual IDE DVD-ROM drive.");
 
         if (int.TryParse(vhdpath, out var hostDriveNumber))
         {
-            await machine.AddPhysicalDisk(ResourceSubType.ControllerIDE, 0, 0, hostDriveNumber, jobProgress, cancellationToken);
+            await machine.AddPhysicalDisk(ResourceSubType.ControllerIDE, 0, 0, hostDriveNumber, jobProgress, cancellationToken).ConfigureAwait(false);
 
             Console.WriteLine($"Attached host physical disk {vhdpath} as primary IDE HD.");
         }
         else if (vhdpath != null)
         {
             vhdpath = Path.GetFullPath(vhdpath);
-            await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.DiskVirtual, null, jobProgress, cancellationToken);
+            await machine.AddDriveWithMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.DiskVirtual, null, jobProgress, cancellationToken).ConfigureAwait(false);
 
             Console.WriteLine("Created primary IDE HD.");
 
-            await machine.InsertMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.StorageVirtualDisk, vhdpath, jobProgress, cancellationToken);
+            await machine.InsertMedia(ResourceSubType.ControllerIDE, 0, 0, ResourceSubType.StorageVirtualDisk, vhdpath, jobProgress, cancellationToken).ConfigureAwait(false);
 
             Console.WriteLine($"Attached virtual disk {vhdpath} as primary IDE HD.");
         }

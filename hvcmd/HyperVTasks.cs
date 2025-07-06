@@ -19,7 +19,7 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        return await machine.ChangeState(newState, jobProgress, cancellationToken);
+        return await machine.ChangeState(newState, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static Task<uint> ChangeState(this ComputerSystem machine, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        return await DestroyVM(machine, jobProgress, cancellationToken);
+        return await DestroyVM(machine, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public async static Task<uint> DestroyVM(this ComputerSystem machine, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -88,7 +88,7 @@ public static class HyperVTasks
 
         var result = virtSysMgmtSvc.DestroySystem(machine.Path, out var jobPath);
 
-        return await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        return await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<ComputerSystem> CreateVM(ManagementScope scope, string name, VMGeneration generation, string configuration_version, long? memory_mb, int? vcpus, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -97,7 +97,7 @@ public static class HyperVTasks
         using var vmMgmtSvc = HyperVSupportRoutines.GetVirtualSystemManagementService(scope);
 
         // Create VM with correct name and default resources
-        var machine = await vmMgmtSvc.CreateDefaultVM(name, generation, configuration_version, jobProgress, cancellationToken);
+        var machine = await vmMgmtSvc.CreateDefaultVM(name, generation, configuration_version, jobProgress, cancellationToken).ConfigureAwait(false);
 
         // Update the resource settings for the VM.
 
@@ -133,7 +133,7 @@ public static class HyperVTasks
                 out var jobPath,
                 out _);
 
-            result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+            result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
             if ((ReturnCode)result != ReturnCode.Completed)
             {
@@ -177,7 +177,7 @@ public static class HyperVTasks
             out var jobPath,
             out var defined_sys);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         if ((ReturnCode)result != ReturnCode.Completed)
         {
@@ -221,7 +221,7 @@ public static class HyperVTasks
 
         var result = virtSysMgmtSvc.AddResourceSettings(machine.Path, newResources, out var jobPath, out var newResourcePaths);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         if ((ReturnCode)result != ReturnCode.Completed)
         {
@@ -257,7 +257,7 @@ public static class HyperVTasks
 
         var result = virtSysMgmtSvc.AddResourceSettings(machine.Path, newResources, out var jobPath, out var newResourcePaths);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         if ((ReturnCode)result != ReturnCode.Completed)
         {
@@ -292,7 +292,7 @@ public static class HyperVTasks
 
         var result = virtSysMgmtSvc.AddResourceSettings(machine.Path, newResources, out var jobPath, out var newResourcePaths);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         if ((ReturnCode)result != ReturnCode.Completed)
         {
@@ -312,7 +312,7 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        await CreateSCSIforVM(machine, jobProgress, cancellationToken);
+        await CreateSCSIforVM(machine, jobProgress, cancellationToken).ConfigureAwait(false);
 
         return 0;
     }
@@ -347,7 +347,7 @@ public static class HyperVTasks
 
         var result = sw_mgmt_svc.DefineSystem(null, ports_text, switch_setting_text, out var jobPath, out var resulting_switch_path);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         return result;
     }
@@ -367,7 +367,7 @@ public static class HyperVTasks
 
         var result = mgmtsvc.AddResourceSettings(vmsettings.Path, [settings.LateBoundObject.GetText(TextFormat.WmiDtd20)], out var jobPath, out var results);
 
-        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken);
+        result = await CompleteJob(result, jobPath, jobProgress, cancellationToken).ConfigureAwait(false);
 
         return result;
     }
@@ -385,7 +385,7 @@ public static class HyperVTasks
 
         var result = moManagementService.AddResourceSettings(machine.Path, newDriveResource, out var job, out var resultResources);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public async static Task<uint> SetVMSystemSettingsData(this VirtualSystemSettingData settings, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -394,7 +394,7 @@ public static class HyperVTasks
 
         var result = service.ModifySystemSettings(settings.LateBoundObject.GetText(TextFormat.CimDtd20), out var job);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public async static Task<uint> SetVMResourceSettingsData(ManagementScope scope, ManagementBaseObject[] settings, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -403,7 +403,7 @@ public static class HyperVTasks
 
         var result = service.ModifyResourceSettings(Array.ConvertAll(settings, setting => setting.GetText(TextFormat.CimDtd20)), out var job, out var results);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> AddPhysicalDisk(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int? driveNumber, int hostDriveNumber, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -411,15 +411,15 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        return await AddPhysicalDisk(machine, controllerType, controllerNumber, driveNumber, hostDriveNumber, jobProgress, cancellationToken);
+        return await AddPhysicalDisk(machine, controllerType, controllerNumber, driveNumber, hostDriveNumber, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
-    public static Task<uint> AddPhysicalDisk(this ComputerSystem machine, string controllerType, int controllerNumber, int? driveNumber, int hostDriveNumber, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static async Task<uint> AddPhysicalDisk(this ComputerSystem machine, string controllerType, int controllerNumber, int? driveNumber, int hostDriveNumber, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
     {
         using var hostDrive = HyperVSupportRoutines.GetHostDiskDrive(machine.Scope, hostDriveNumber) ??
             throw new Exception($"Cannot find physical disk number {hostDriveNumber} on host. Please verify that the disk is attached and is in offline mode.");
 
-        return AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, ResourceSubType.DiskPhysical, hostDrive.Path.Path, jobProgress, cancellationToken);
+        return await AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, ResourceSubType.DiskPhysical, hostDrive.Path.Path, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> AddDriveWithMedia(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int? driveNumber, string storageType, string hostResourcePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -427,7 +427,7 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        return await AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, storageType, hostResourcePath, jobProgress, cancellationToken);
+        return await AddDriveWithMedia(machine, controllerType, controllerNumber, driveNumber, storageType, hostResourcePath, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> AddDriveWithMedia(this ComputerSystem machine, string controllerType, int controllerNumber, int? driveNumber, string storageType, string hostResourcePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -459,7 +459,7 @@ public static class HyperVTasks
 
         var result = managementService.AddResourceSettings(machine.Path, newDriveResource, out var job, out var resultResources);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> InsertMedia(ManagementScope scope, string machineName, string controllerType, int controllerNumber, int deviceNumber, string storageType, string imagePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -467,7 +467,7 @@ public static class HyperVTasks
         using var machine = HyperVSupportRoutines.GetTargetComputer(scope, machineName) ??
             throw new Exception("Virtual machine not found.");
 
-        return await InsertMedia(machine, controllerType, controllerNumber, deviceNumber, storageType, imagePath, jobProgress, cancellationToken);
+        return await InsertMedia(machine, controllerType, controllerNumber, deviceNumber, storageType, imagePath, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> InsertMedia(this ComputerSystem machine, string controllerType, int controllerNumber, int deviceNumber, string storageType, string imagePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -495,7 +495,7 @@ public static class HyperVTasks
 
         var result = managementService.AddResourceSettings(machine.Path, newDriveResource, out var job, out var resultResources);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> InsertMedia(this ComputerSystem machine, ResourceAllocationSettingData device, string storageType, string imagePath, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -519,7 +519,7 @@ public static class HyperVTasks
 
         var result = managementService.AddResourceSettings(machine.Path, newDriveResource, out var job, out var resultResources);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> EjectMedia(this ResourceAllocationSettingData device, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
@@ -537,7 +537,7 @@ public static class HyperVTasks
 
         var result = managementService.RemoveResourceSettings([resource.Path], out var job);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> ConvertVirtualHardDisk(
@@ -571,7 +571,7 @@ public static class HyperVTasks
 
         var result = imageService.ConvertVirtualHardDisk(sourcePath, settingsInstance.LateBoundObject.GetText(TextFormat.WmiDtd20), out var job);
 
-        return await CompleteJob(result, job, jobProgress, cancellationToken);
+        return await CompleteJob(result, job, jobProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<uint> CompleteJob(uint result, ManagementPath jobPath, Func<ConcreteJob, CancellationToken, Task> progressCallback, CancellationToken cancellationToken)
@@ -591,11 +591,11 @@ public static class HyperVTasks
         {
             if (progressCallback == null)
             {
-                await Task.Delay(500, cancellationToken);
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await progressCallback(job, cancellationToken);
+                await progressCallback(job, cancellationToken).ConfigureAwait(false);
             }
 
             job.LateBoundObject.Refresh();
@@ -603,7 +603,7 @@ public static class HyperVTasks
 
         if (progressCallback != null)
         {
-            await progressCallback(job, cancellationToken);
+            await progressCallback(job, cancellationToken).ConfigureAwait(false);
         }
 
         if ((JobState)job.JobState != JobState.Completed)
