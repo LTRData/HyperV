@@ -10,7 +10,7 @@
     <Company>LTR Data</Company>
     <Product>LTR.HyperV</Product>
     <Copyright>Copyright © Olof Lagerkvist, LTR Data 2012-2025</Copyright>
-    <Version>2.0.3</Version>
+    <Version>2.0.4</Version>
     <AssemblyVersion>2.0.*</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <PackageVersion>$(Version)</PackageVersion>
