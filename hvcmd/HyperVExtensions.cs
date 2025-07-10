@@ -1,8 +1,11 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace LTR.HyperV;
 
@@ -12,9 +15,9 @@ internal static class InternalExtensions
 
     public static IEnumerable<string> EnumerateMessages(this Exception ex) => ex.Enumerate().Select(x => x.Message);
 
-    public static IEnumerable<Exception> Enumerate(this Exception ex)
+    public static IEnumerable<Exception> Enumerate(this Exception? ex)
     {
-        while (ex != null)
+        while (ex is not null)
         {
             if (ex is AggregateException aex)
             {
@@ -41,5 +44,8 @@ internal static class InternalExtensions
 
 public static class HyperVExtensions
 {
-    public static void Refresh(this ManagementBaseObject obj) => (obj as ManagementObject)?.Get();
+#if NETCOREAPP
+    [SupportedOSPlatform("windows")]
+#endif
+    public static void Refresh(this ManagementBaseObject? obj) => (obj as ManagementObject)?.Get();
 }

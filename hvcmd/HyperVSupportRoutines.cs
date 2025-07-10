@@ -1,4 +1,6 @@
-﻿// auth: Sergei Meleshchuk, June 2008.
+﻿#nullable enable
+
+// auth: Sergei Meleshchuk, June 2008.
 // Based in part on powershell code by James O'Naill
 using LTR.HyperV.Management.ROOT.virtualization.v2;
 using System;
@@ -69,7 +71,7 @@ public class JobFailedException : Exception
 #endif
 public static class HyperVSupportRoutines
 {
-    public static ManagementScope GetManagementScope(string remoteMachine) =>
+    public static ManagementScope GetManagementScope(string? remoteMachine) =>
         new(@$"{remoteMachine}\root\virtualization\v2");
 
     public static void SetPropertyValueIfExists<T>(this ManagementBaseObject obj, string propertyName, T value)
@@ -90,31 +92,31 @@ public static class HyperVSupportRoutines
             .Replace("\"", "\\\"");
     }
 
-    public static ComputerSystem GetTargetComputer(ManagementScope scope, string vmElementName) =>
+    public static ComputerSystem? GetTargetComputer(ManagementScope? scope, string vmElementName) =>
         ComputerSystem.GetInstances(scope, $"ElementName = '{vmElementName}'").OfType<ComputerSystem>().FirstOrDefault();
 
-    public static IEnumerable<ComputerSystem> GetTargetComputers(ManagementScope scope) =>
+    public static IEnumerable<ComputerSystem> GetTargetComputers(ManagementScope? scope) =>
         ComputerSystem.GetInstances(scope, default(string)).OfType<ComputerSystem>();
 
-    public static IEnumerable<ComputerSystem> GetVM(ManagementScope scope, string vmElementName) =>
+    public static IEnumerable<ComputerSystem> GetVM(ManagementScope? scope, string vmElementName) =>
         ComputerSystem.GetInstances(scope, $"ElementName = '{vmElementName}'").OfType<ComputerSystem>();
 
-    public static ComputerSystem GetVM(ManagementScope scope, Guid id) =>
+    public static ComputerSystem? GetVM(ManagementScope? scope, Guid id) =>
         ComputerSystem.GetInstances(scope, $"Name = '{id}'").OfType<ComputerSystem>().FirstOrDefault();
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
         [.. sequence.
             OfType<ManagementObject>().
-            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().Contains(keyword, StringComparison.OrdinalIgnoreCase)))];
+            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value?.ToString() is { } str && str.Contains(keyword, StringComparison.OrdinalIgnoreCase)))];
 #else
     public static ManagementObject[] FindObjectByPropertyValue(this IEnumerable<ManagementObject> sequence, string keyword) =>
         [.. sequence.
             OfType<ManagementObject>().
-            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value != null && v.Value.ToString().IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0))];
+            Where(o => o.Properties.OfType<PropertyData>().Any(v => v.Value?.ToString() is { } str && str.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0))];
 #endif
 
-    public static VMGeneration GetVMGeneration(ManagementScope scope, string machine)
+    public static VMGeneration GetVMGeneration(ManagementScope? scope, string machine)
     {
         using var vm = GetVM(scope, machine).FirstOrDefault() ??
             throw new Exception("Virtual machine not found.");
@@ -124,7 +126,8 @@ public static class HyperVSupportRoutines
 
     public static VMGeneration GetVMGeneration(this ComputerSystem machine)
     {
-        using var vm_settings = machine.GetVMSystemSettingsData();
+        using var vm_settings = machine.GetVMSystemSettingsData()
+            ?? throw new VirtualMachineNotFoundException("Cannot find management object for VM");
 
         return vm_settings.GetVMGeneration();
     }
@@ -146,7 +149,7 @@ public static class HyperVSupportRoutines
         return VMGeneration.G1;
     }
 
-    public static ResourceAllocationSettingData GetController(this ComputerSystem machine, string resourceSubtype, int controllerNumber)
+    public static ResourceAllocationSettingData? GetController(this ComputerSystem machine, string resourceSubtype, int controllerNumber)
     {
         var vmName = machine.Name;
 
@@ -155,13 +158,13 @@ public static class HyperVSupportRoutines
         return ResourceAllocationSettingData.GetInstances(machine.Scope, where).OfType<ResourceAllocationSettingData>().FirstOrDefault();
     }
 
-    public static ResourceAllocationSettingData GetFloppyController(this ComputerSystem machine) =>
+    public static ResourceAllocationSettingData? GetFloppyController(this ComputerSystem machine) =>
         machine.GetController(ResourceSubType.ControllerFD, 0);
 
-    public static ResourceAllocationSettingData GetIDEController(this ComputerSystem machine, int controllerNumber) =>
+    public static ResourceAllocationSettingData? GetIDEController(this ComputerSystem machine, int controllerNumber) =>
         machine.GetController(ResourceSubType.ControllerIDE, controllerNumber);
 
-    public static ResourceAllocationSettingData GetSCSIController(this ComputerSystem machine, int controllerNumber) =>
+    public static ResourceAllocationSettingData? GetSCSIController(this ComputerSystem machine, int controllerNumber) =>
         machine.GetController(ResourceSubType.ControllerSCSI, controllerNumber);
 
     public static SerialPortSettingData[] GetSerialPorts(this ComputerSystem machine)
@@ -173,7 +176,7 @@ public static class HyperVSupportRoutines
         return [.. SerialPortSettingData.GetInstances(machine.Scope, where).OfType<SerialPortSettingData>()];
     }
 
-    public static RdvComponentSettingData GetRdvComponentSettings(this VirtualSystemSettingData vmSettings)
+    public static RdvComponentSettingData? GetRdvComponentSettings(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, RdvComponentSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -182,7 +185,7 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<RdvComponentSettingData>().FirstOrDefault();
     }
 
-    public static TimeSyncComponentSettingData GetTimeSyncComponentSettingData(this VirtualSystemSettingData vmSettings)
+    public static TimeSyncComponentSettingData? GetTimeSyncComponentSettingData(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, TimeSyncComponentSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -191,7 +194,7 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<TimeSyncComponentSettingData>().FirstOrDefault();
     }
 
-    public static GuestServiceInterfaceComponentSettingData GetGuestServiceInterfaceComponentSettings(this VirtualSystemSettingData vmSettings)
+    public static GuestServiceInterfaceComponentSettingData? GetGuestServiceInterfaceComponentSettings(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, GuestServiceInterfaceComponentSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -200,10 +203,10 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<GuestServiceInterfaceComponentSettingData>().FirstOrDefault();
     }
 
-    public static DiskDrive GetHostDiskDrive(ManagementScope scope, int hostDriveNumber) =>
+    public static DiskDrive? GetHostDiskDrive(ManagementScope? scope, int hostDriveNumber) =>
         DiskDrive.GetInstances(scope, $"DriveNumber = {hostDriveNumber}").OfType<DiskDrive>().FirstOrDefault();
 
-    public static VirtualSystemSettingData GetVMSystemSettingsData(this ComputerSystem machine)
+    public static VirtualSystemSettingData? GetVMSystemSettingsData(this ComputerSystem machine)
     {
         var wmiObjQuery = new RelatedObjectQuery(machine.Path.Path, VirtualSystemSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(machine.Scope, wmiObjQuery);
@@ -237,7 +240,7 @@ public static class HyperVSupportRoutines
         }
     }
 
-    public static void ListControllerChildren(this ComputerSystem machine, string controllerPath, string className)
+    public static void ListControllerChildren(this ComputerSystem machine, string controllerPath, string? className)
     {
         var vmName = machine.Name;
 
@@ -250,7 +253,7 @@ public static class HyperVSupportRoutines
         foreach (var controller in moControllerRasds)
         {
 
-            var path = controller["instanceId"] as string;
+            var path = (string)controller["instanceId"];
 
             where = $"parent Like '%instanceId=\"{path.Replace(@"\", @"\\\\")}\"%'";
 
@@ -288,7 +291,7 @@ public static class HyperVSupportRoutines
         }
     }
 
-    public static ResourceAllocationSettingData GetControllerChild(this ResourceAllocationSettingData controller, int deviceNumber)
+    public static ResourceAllocationSettingData? GetControllerChild(this ResourceAllocationSettingData controller, int deviceNumber)
     {
 
         var where = $"parent Like '%instanceId=\"{controller.InstanceID.Replace(@"\", @"\\\\")}\"%' and AddressOnParent = {deviceNumber}";
@@ -299,26 +302,26 @@ public static class HyperVSupportRoutines
 
     }
 
-    public static VirtualSystemManagementService GetVirtualSystemManagementService(ManagementScope scope) =>
+    public static VirtualSystemManagementService GetVirtualSystemManagementService(ManagementScope? scope) =>
         VirtualSystemManagementService.GetInstances(scope, default(string))
             .OfType<VirtualSystemManagementService>().SingleOrDefault() ??
                 throw new Exception($"Cannot access VirtualSystemManagementService object");
 
-    public static VirtualEthernetSwitchManagementService GetVirtualSwitchManagementService(ManagementScope scope) =>
+    public static VirtualEthernetSwitchManagementService GetVirtualSwitchManagementService(ManagementScope? scope) =>
         VirtualEthernetSwitchManagementService.GetInstances(scope, default(string))
             .OfType<VirtualEthernetSwitchManagementService>().SingleOrDefault() ??
                 throw new Exception($"Cannot access VirtualEthernetSwitchManagementService object");
 
-    public static StorageAllocationSettingData GetISOTemplate(ManagementScope scope) =>
+    public static StorageAllocationSettingData GetISOTemplate(ManagementScope? scope) =>
         GetStorageTemplate(scope, ResourceSubType.StorageVirtualDVD);
 
-    public static StorageAllocationSettingData GetVHDTemplate(ManagementScope scope) =>
+    public static StorageAllocationSettingData GetVHDTemplate(ManagementScope? scope) =>
         GetStorageTemplate(scope, ResourceSubType.StorageVirtualDisk);
 
-    public static StorageAllocationSettingData GetPHDTemplate(ManagementScope scope) =>
+    public static StorageAllocationSettingData GetPHDTemplate(ManagementScope? scope) =>
         GetStorageTemplate(scope, ResourceSubType.StoragePhysicalDisk);
 
-    public static StorageAllocationSettingData GetVFDTemplate(ManagementScope scope) =>
+    public static StorageAllocationSettingData GetVFDTemplate(ManagementScope? scope) =>
         GetStorageTemplate(scope, ResourceSubType.StorageVirtualFD);
 
     public static string GetVMDiskInstanceID(this ComputerSystem machine, string controllerType, int controllerNumber, int deviceNumber)
@@ -364,7 +367,7 @@ public static class HyperVSupportRoutines
         return device.Path;
     }
 
-    public static ResourceAllocationSettingData GetResourceTemplate(ManagementScope scope, string resourceSubType)
+    public static ResourceAllocationSettingData GetResourceTemplate(ManagementScope? scope, string resourceSubType)
     {
         var defaultDriveQuery = $"ResourceSubType LIKE \"{resourceSubType}\" AND InstanceID LIKE \"%Default\"";
         var defaultDiskDriveSettingsObjs = ResourceAllocationSettingData.GetInstances(scope, defaultDriveQuery);
@@ -379,7 +382,7 @@ public static class HyperVSupportRoutines
         return new ResourceAllocationSettingData((ManagementBaseObject)defaultDiskDriveSettings.LateBoundObject.Clone());
     }
 
-    public static StorageAllocationSettingData GetStorageTemplate(ManagementScope scope, string resourceSubType)
+    public static StorageAllocationSettingData GetStorageTemplate(ManagementScope? scope, string resourceSubType)
     {
         var defaultDriveQuery = $"ResourceSubType LIKE \"{resourceSubType}\" AND InstanceID LIKE \"%Default\"";
         var defaultDiskDriveSettingsObjs = StorageAllocationSettingData.GetInstances(scope, defaultDriveQuery);
@@ -401,7 +404,7 @@ public static class HyperVSupportRoutines
             Replace("\\", "\\\\").
             Replace("\"", "\\\"");
 
-    public static ManagementObject GetWmiObject(ManagementScope scope, string classname, string where)
+    public static ManagementObject GetWmiObject(ManagementScope? scope, string classname, string where)
     {
         using var resultset = GetWmiObjects(scope, classname, where);
 
@@ -409,7 +412,7 @@ public static class HyperVSupportRoutines
             throw new Exception($"Cannot find class '{classname} where {where}'");
     }
 
-    private static ManagementObjectCollection GetWmiObjects(ManagementScope scope, string classname, string where)
+    private static ManagementObjectCollection GetWmiObjects(ManagementScope? scope, string classname, string where)
     {
         string query;
 
@@ -430,7 +433,7 @@ public static class HyperVSupportRoutines
 
     // -- end of main helpers
 
-    public static ProcessorSettingData GetProcSettings(this VirtualSystemSettingData vmSettings)
+    public static ProcessorSettingData? GetProcSettings(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, ProcessorSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -439,7 +442,7 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<ProcessorSettingData>().FirstOrDefault();
     }
 
-    public static GuestCommunicationServiceSettingData GetGuestCommServiceSettings(this VirtualSystemSettingData vmSettings)
+    public static GuestCommunicationServiceSettingData? GetGuestCommServiceSettings(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, GuestCommunicationServiceSettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -448,7 +451,7 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<GuestCommunicationServiceSettingData>().FirstOrDefault();
     }
 
-    public static MemorySettingData GetMemSettings(this VirtualSystemSettingData vmSettings)
+    public static MemorySettingData? GetMemSettings(this VirtualSystemSettingData vmSettings)
     {
         var wmiObjQuery = new RelatedObjectQuery(vmSettings.Path.Path, MemorySettingData.CreatedClassName);
         using var wmiObjectSearch = new ManagementObjectSearcher(vmSettings.Scope, wmiObjQuery);
@@ -457,14 +460,14 @@ public static class HyperVSupportRoutines
         return wmiObjCollection.OfType<MemorySettingData>().FirstOrDefault();
     }
 
-    public static ShutdownComponent GetShutdownComponent(ManagementScope scope, string machineGuid) =>
+    public static ShutdownComponent? GetShutdownComponent(ManagementScope? scope, string machineGuid) =>
         ShutdownComponent.GetInstances(scope, $"SystemName='{machineGuid}'")
             .OfType<ShutdownComponent>().FirstOrDefault();
 
-    public static ShutdownComponent GetShutdownComponent(this ComputerSystem machine) =>
+    public static ShutdownComponent? GetShutdownComponent(this ComputerSystem machine) =>
         GetShutdownComponent(machine.Scope, machine.Name);
 
-    public static uint CompleteJob_old(ManagementScope scope, ManagementBaseObject outParams, Action<ManagementObject> progressCallback)
+    public static uint CompleteJob_old(ManagementScope? scope, ManagementBaseObject outParams, Action<ManagementObject> progressCallback)
     {
         var result = (ReturnCode)outParams["ReturnValue"];
         if (result != ReturnCode.Started)
@@ -506,9 +509,11 @@ public static class HyperVSupportRoutines
         throw new JobFailedException(Job);
     }
 
-    public static EthernetPortAllocationSettingData CreateInternalEthernetPort(ManagementScope scope, string name)
+    public static EthernetPortAllocationSettingData CreateInternalEthernetPort(ManagementScope? scope, string name)
     {
-        using var hostComputerSystem = HyperVSupportRoutines.GetTargetComputer(scope, Environment.MachineName);
+        using var hostComputerSystem = GetTargetComputer(scope, Environment.MachineName)
+            ?? throw new Exception($"Computer '{Environment.MachineName}' not found in scope");
+
         using var default_settings = EthernetPortAllocationSettingData.GetInstances(scope, "InstanceID LIKE \"%Default\"").OfType<EthernetPortAllocationSettingData>().First();
 
         var settings = new EthernetPortAllocationSettingData((ManagementBaseObject)default_settings.LateBoundObject.Clone());
@@ -517,7 +522,7 @@ public static class HyperVSupportRoutines
         return settings;
     }
 
-    public static EthernetPortAllocationSettingData CreateExternalEthernetPort(ManagementScope scope, string name, string adapter_name)
+    public static EthernetPortAllocationSettingData CreateExternalEthernetPort(ManagementScope? scope, string name, string adapter_name)
     {
         using var adapter = ExternalEthernetPort.GetInstances(scope, $"Name=\"{adapter_name}\"").OfType<ExternalEthernetPort>().Single();
         using var default_settings = EthernetPortAllocationSettingData.GetInstances(scope, "InstanceID LIKE \"%Default\"").OfType<EthernetPortAllocationSettingData>().First();
@@ -528,17 +533,17 @@ public static class HyperVSupportRoutines
         return settings;
     }
 
-    public static VirtualEthernetSwitch GetEthernetSwitchByName(ManagementScope scope, string name) =>
+    public static VirtualEthernetSwitch? GetEthernetSwitchByName(ManagementScope? scope, string name) =>
         VirtualEthernetSwitch.GetInstances(scope, $"ElementName = \"{name}\"").OfType<VirtualEthernetSwitch>().FirstOrDefault();
 
-    public static VirtualEthernetSwitch GetEthernetSwitchById(ManagementScope scope, string id) =>
+    public static VirtualEthernetSwitch? GetEthernetSwitchById(ManagementScope? scope, string id) =>
         VirtualEthernetSwitch.GetInstances(scope, $"Name = \"{id}\"").OfType<VirtualEthernetSwitch>().FirstOrDefault();
 
-    public static VirtualEthernetSwitch[] GetEthernetSwitches(ManagementScope scope) =>
+    public static VirtualEthernetSwitch[] GetEthernetSwitches(ManagementScope? scope) =>
         [.. VirtualEthernetSwitch.GetInstances(scope, string.Empty).OfType<VirtualEthernetSwitch>()];
 
     public static EthernetSwitchPort[] GetEthernetSwitchPorts(this VirtualEthernetSwitch sw) =>
-        [.. (sw.LateBoundObject as ManagementObject)
+        [.. ((ManagementObject)sw.LateBoundObject)
             .GetRelated("Msvm_EthernetSwitchPort",
                         "Msvm_SystemDevice",
                         null, null, null, null, false, null)
@@ -546,7 +551,7 @@ public static class HyperVSupportRoutines
             .Select(mbo => new EthernetSwitchPort(mbo))];
 
     public static EthernetPortAllocationSettingData GetEthernetSwitchPortSettingsData(this EthernetSwitchPort port) =>
-        (port.LateBoundObject as ManagementObject)
+        ((ManagementObject)port.LateBoundObject)
             .GetRelated("Msvm_EthernetPortAllocationSettingData",
                         "Msvm_ElementSettingData",
                         null, null, null, null, false, null)
@@ -554,7 +559,7 @@ public static class HyperVSupportRoutines
             .Select(mbo => new EthernetPortAllocationSettingData(mbo))
             .Single();
 
-    public static ManagementObject[] GetEthernetSwitchPortSettingsDataHostResources(this EthernetPortAllocationSettingData settingsdata)
+    public static ManagementObject[]? GetEthernetSwitchPortSettingsDataHostResources(this EthernetPortAllocationSettingData settingsdata)
     {
         if (settingsdata.HostResource == null)
         {
@@ -566,21 +571,23 @@ public static class HyperVSupportRoutines
         return mo;
     }
 
-    public static ExternalEthernetPort[] GetEthernetSwitchExternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
-        [.. settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
+    public static ExternalEthernetPort[]? GetEthernetSwitchExternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
+        settingsdata.GetEthernetSwitchPortSettingsDataHostResources()?
             .Where(mo => mo.ClassPath.ClassName.Equals(ExternalEthernetPort.CreatedClassName, StringComparison.OrdinalIgnoreCase))
-            .Select(mo => new ExternalEthernetPort(mo))];
+            .Select(mo => new ExternalEthernetPort(mo))
+            .ToArray();
 
-    public static ComputerSystem[] GetEthernetSwitchInternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
-        [.. settingsdata.GetEthernetSwitchPortSettingsDataHostResources()
+    public static ComputerSystem[]? GetEthernetSwitchInternalPorts(this EthernetPortAllocationSettingData settingsdata) =>
+        settingsdata.GetEthernetSwitchPortSettingsDataHostResources()?
             .Where(mo => mo.ClassPath.ClassName.Equals(ComputerSystem.CreatedClassName, StringComparison.OrdinalIgnoreCase))
-            .Select(mo => new ComputerSystem(mo))];
+            .Select(mo => new ComputerSystem(mo))
+            .ToArray();
 
     public static string DefaultSwitchId { get; } = "C08CB7B8-9B3C-408E-8E30-5E16A3AEB444";
 
     public static Guid DefaultSwitchGuid { get; } = new Guid(DefaultSwitchId);
 
-    public static VirtualEthernetSwitch GetEthernetDefaultSwitch(ManagementScope scope) =>
+    public static VirtualEthernetSwitch? GetEthernetDefaultSwitch(ManagementScope? scope) =>
         GetEthernetSwitchById(scope, DefaultSwitchId);
 
     /// <summary>
@@ -589,11 +596,11 @@ public static class HyperVSupportRoutines
     /// <param name="scope"></param>
     /// <param name="serviceName"></param>
     /// <returns></returns>
-    public static ManagementObject GetServiceObject(ManagementScope scope, string serviceName)
+    public static ManagementObject? GetServiceObject(ManagementScope? scope, string serviceName)
     {
-        scope.Connect();
+        scope?.Connect();
         var wmiPath = new ManagementPath(serviceName);
-        using var serviceClass = new ManagementClass(scope, wmiPath, null);
+        using var serviceClass = new ManagementClass(scope, wmiPath, options: null);
         var services = serviceClass.GetInstances();
 
         var serviceObject = services.OfType<ManagementObject>().FirstOrDefault();
@@ -601,17 +608,18 @@ public static class HyperVSupportRoutines
         return serviceObject;
     }
 
-    public static ManagementObject GetHostSystemDevice(string deviceClassName, string deviceObjectElementName, ManagementScope scope) =>
+    public static ManagementObject? GetHostSystemDevice(string deviceClassName, string deviceObjectElementName, ManagementScope scope) =>
         GetSystemDevice(deviceClassName, deviceObjectElementName, Environment.MachineName, scope);
 
-    public static ManagementObject GetSystemDevice
+    public static ManagementObject? GetSystemDevice
     (
         string deviceClassName,
         string deviceObjectElementName,
         string vmName,
         ManagementScope scope)
     {
-        using var computerSystem = HyperVSupportRoutines.GetTargetComputer(scope, vmName);
+        using var computerSystem = GetTargetComputer(scope, vmName)
+            ?? throw new VirtualMachineNotFoundException($"Virtual machine '{vmName}' not found");
 
         var systemDevices = ((ManagementObject)computerSystem.LateBoundObject).GetRelated
         (
@@ -627,7 +635,7 @@ public static class HyperVSupportRoutines
 
         var systemDevice = systemDevices
             .OfType<ManagementObject>()
-            .FirstOrDefault(device => device["ElementName"].ToString().Equals(deviceObjectElementName, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(device => deviceObjectElementName.Equals(device["ElementName"].ToString(), StringComparison.OrdinalIgnoreCase));
 
         return systemDevice;
     }
@@ -699,7 +707,7 @@ public static class HyperVSupportRoutines
     //
     // Get RASD definitions
     //
-    public static ManagementObject GetResourceAllocationsettingDataDefault
+    public static ManagementObject? GetResourceAllocationsettingDataDefault
     (
         ManagementScope scope,
         ushort resourceType,
@@ -707,7 +715,7 @@ public static class HyperVSupportRoutines
         string otherResourceType
         )
     {
-        ManagementObject RASD = null;
+        ManagementObject? RASD = null;
 
         string query;
 
@@ -743,13 +751,13 @@ public static class HyperVSupportRoutines
         return RASD;
     }
 
-    public static ManagementObject GetResourceAllocationsettingData(
+    public static ManagementObject? GetResourceAllocationsettingData(
         ManagementObject vm,
         ushort resourceType,
         string resourceSubType,
         string otherResourceType)
     {
-        ManagementObject RASD = null;
+        ManagementObject? RASD = null;
         using var settingDatas = vm.GetRelated("Msvm_VirtualSystemsettingData");
 
         foreach (var settingData in settingDatas.OfType<ManagementObject>())
@@ -792,21 +800,28 @@ public static class HyperVSupportRoutines
         doc.LoadXml(embeddedInstance);
 
         var nodelist = doc.SelectNodes(@"/INSTANCE/@CLASSNAME");
-        if (nodelist.Count != 1)
+        
+        if (nodelist is null || nodelist.Count != 1)
         {
             throw new FormatException();
         }
 
-        Console.WriteLine($"Contents of class {nodelist[0].Value}:");
+        Console.WriteLine($"Contents of class {nodelist[0]?.Value}:");
 
         nodelist = doc.SelectNodes("//PROPERTY");
+
+        if (nodelist is null)
+        {
+            return;
+        }
+
         foreach (XmlNode node in nodelist)
         {
-            Console.WriteLine($"Property : {node.Attributes["NAME"].Value}");
-            Console.WriteLine($"\tType: {node.Attributes["TYPE"].Value}");
+            Console.WriteLine($"Property : {node.Attributes?["NAME"]?.Value}");
+            Console.WriteLine($"\tType: {node.Attributes?["TYPE"]?.Value}");
 
             var valueNode = node.SelectSingleNode("VALUE");
-            Console.WriteLine($"\tValue: {valueNode.InnerText}");
+            Console.WriteLine($"\tValue: {valueNode?.InnerText}");
         }
     }
 

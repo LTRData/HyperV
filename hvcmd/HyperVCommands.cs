@@ -1,4 +1,6 @@
-﻿using LTR.HyperV.Management.ROOT.virtualization.v2;
+﻿#nullable enable
+
+using LTR.HyperV.Management.ROOT.virtualization.v2;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +17,7 @@ namespace LTR.HyperV;
 #endif
 public static class HyperVCommands
 {
-    public async static Task<uint> cmdAddVNIC(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public async static Task<uint> cmdAddVNIC(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -30,7 +32,7 @@ public static class HyperVCommands
         return 0;
     }
 
-    public async static Task<uint> cmdAddENIC(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public async static Task<uint> cmdAddENIC(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -45,7 +47,7 @@ public static class HyperVCommands
         return 0;
     }
 
-    public async static Task<uint> cmdAddSwitch(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public async static Task<uint> cmdAddSwitch(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -61,7 +63,7 @@ public static class HyperVCommands
         return 0;
     }
 
-    public static Task<uint> cmdListSwitches(ManagementScope scope, List<string> _1, Func<ConcreteJob, CancellationToken, Task> _2, CancellationToken _3)
+    public static Task<uint> cmdListSwitches(ManagementScope? scope, List<string> _1, Func<ConcreteJob, CancellationToken, Task>? _2, CancellationToken _3)
     {
         var sws = HyperVSupportRoutines.GetEthernetSwitches(scope);
 
@@ -77,13 +79,13 @@ public static class HyperVCommands
 
                 HyperVSupportRoutines.ListObjectProperties(settingsdata.LateBoundObject);
 
-                foreach (var adapter in settingsdata.GetEthernetSwitchExternalPorts())
+                foreach (var adapter in settingsdata.GetEthernetSwitchExternalPorts() ?? [])
                 {
                     Console.WriteLine("This switch is connected to the following external adapter:");
                     HyperVSupportRoutines.ListObjectProperties(adapter.LateBoundObject);
                 }
 
-                foreach (var connection in settingsdata.GetEthernetSwitchInternalPorts())
+                foreach (var connection in settingsdata.GetEthernetSwitchInternalPorts() ?? [])
                 {
                     Console.WriteLine("This switch is connected to the following internal connection:");
                     HyperVSupportRoutines.ListObjectProperties(connection.LateBoundObject);
@@ -96,7 +98,7 @@ public static class HyperVCommands
         return Task.FromResult(0u);
     }
 
-    public static Task<uint> cmdConvertVHD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdConvertVHD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -151,7 +153,7 @@ public static class HyperVCommands
         return HyperVTasks.ConvertVirtualHardDisk(scope, sourcePath, targetPath, vdiskType, vdiskFormat, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdList(ManagementScope scope, List<string> _)
+    public static Task<uint> cmdList(ManagementScope? scope, List<string> _)
     {
         foreach (var obj in HyperVSupportRoutines.GetTargetComputers(scope))
         {
@@ -173,7 +175,7 @@ public static class HyperVCommands
         return Task.FromResult(0u);
     }
 
-    public static Task<uint> cmdQuery(ManagementScope scope, List<string> args)
+    public static Task<uint> cmdQuery(ManagementScope? scope, List<string> args)
     {
         if (args.Count == 0)
         {
@@ -188,7 +190,7 @@ public static class HyperVCommands
         return Task.FromResult(0u);
     }
 
-    public static Task<uint> cmdChangeState(ManagementScope scope, List<string> args, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdChangeState(ManagementScope? scope, List<string> args, VirtualMachineState newState, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -201,7 +203,7 @@ public static class HyperVCommands
         return HyperVTasks.ChangeState(scope, machineName, newState, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdShutdown(ManagementScope scope, List<string> args)
+    public static Task<uint> cmdShutdown(ManagementScope? scope, List<string> args)
     {
         if (args.Count == 0)
         {
@@ -221,7 +223,7 @@ public static class HyperVCommands
         return HyperVTasks.Shutdown(scope, machineName, forceShutdown);
     }
 
-    public static Task<uint> cmdFD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdFD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -231,7 +233,7 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string imagePath = null;
+        string? imagePath = null;
         if (args.Count > 0)
         {
             imagePath = args[0];
@@ -241,7 +243,7 @@ public static class HyperVCommands
         return HyperVTasks.AddDriveWithMedia(scope, machineName, ResourceSubType.ControllerFD, 0, 0, ResourceSubType.StorageVirtualDisk, imagePath, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdIDEPHD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdIDEPHD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -275,7 +277,7 @@ public static class HyperVCommands
         return HyperVTasks.AddPhysicalDisk(scope, machineName, ResourceSubType.ControllerIDE, controllerNumber, null, hostDriveNumber, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdSCSIPHD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdSCSIPHD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -309,7 +311,7 @@ public static class HyperVCommands
         return HyperVTasks.AddPhysicalDisk(scope, machineName, ResourceSubType.ControllerSCSI, controllerNumber, null, hostDriveNumber, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdIDEDVD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdIDEDVD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -319,7 +321,7 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string imagePath = null;
+        string? imagePath = null;
         if (args.Count > 0)
         {
             imagePath = args[0];
@@ -343,7 +345,7 @@ public static class HyperVCommands
         return HyperVTasks.InsertMedia(scope, machineName, ResourceSubType.ControllerIDE, controllerNumber, deviceNumber, ResourceSubType.StorageVirtualDVD, imagePath, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdSCSIDVD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdSCSIDVD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -353,7 +355,7 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string imagePath = null;
+        string? imagePath = null;
         if (args.Count > 0)
         {
             imagePath = args[0];
@@ -377,7 +379,7 @@ public static class HyperVCommands
         return HyperVTasks.AddDriveWithMedia(scope, machineName, ResourceSubType.ControllerSCSI, controllerNumber, deviceNumber, ResourceSubType.DVDVirtual, imagePath, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdIDEVHD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdIDEVHD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -387,7 +389,7 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string imagePath = null;
+        string? imagePath = null;
         if (args.Count > 0)
         {
             imagePath = args[0];
@@ -411,7 +413,7 @@ public static class HyperVCommands
         return HyperVTasks.InsertMedia(scope, machineName, ResourceSubType.ControllerIDE, controllerNumber, deviceNumber, ResourceSubType.StorageVirtualDisk, imagePath, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdSCSIVHD(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdSCSIVHD(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -421,7 +423,7 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string imagePath = null;
+        string? imagePath = null;
         if (args.Count > 0)
         {
             imagePath = args[0];
@@ -445,7 +447,7 @@ public static class HyperVCommands
         return HyperVTasks.InsertMedia(scope, machineName, ResourceSubType.ControllerSCSI, controllerNumber, deviceNumber, ResourceSubType.StorageVirtualDisk, imagePath, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdDestroyVM(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdDestroyVM(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -458,7 +460,7 @@ public static class HyperVCommands
         return HyperVTasks.DestroyVM(scope, machineName, jobProgress, cancellationToken);
     }
 
-    public static Task<uint> cmdCreateSCSI(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static Task<uint> cmdCreateSCSI(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -471,7 +473,7 @@ public static class HyperVCommands
         return HyperVTasks.CreateSCSIforVM(scope, machineName, jobProgress, cancellationToken);
     }
 
-    public static async Task<uint> cmdCreateVM(ManagementScope scope, List<string> args, Func<ConcreteJob, CancellationToken, Task> jobProgress, CancellationToken cancellationToken)
+    public static async Task<uint> cmdCreateVM(ManagementScope? scope, List<string> args, Func<ConcreteJob, CancellationToken, Task>? jobProgress, CancellationToken cancellationToken)
     {
         if (args.Count == 0)
         {
@@ -487,7 +489,7 @@ public static class HyperVCommands
 
         var vcpus = args.Count > 2 ? int.Parse(args[2]) : default(int?);
 
-        using var machine = await HyperVTasks.CreateVM(scope, machineName, VMGeneration.G1, null, memory_mb, vcpus, jobProgress, cancellationToken).ConfigureAwait(false);
+        using var machine = await HyperVTasks.CreateVM(scope, machineName, VMGeneration.G1, configuration_version: null, memory_mb, vcpus, jobProgress, cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine($"Created virtual machine {machine.ElementName} with GUID {machine.Name}.");
 
@@ -524,7 +526,7 @@ public static class HyperVCommands
         return 0u;
     }
 
-    public static Task<uint> cmdLISTCTRL(ManagementScope scope, List<string> args)
+    public static Task<uint> cmdLISTCTRL(ManagementScope? scope, List<string> args)
     {
         if (args.Count == 0)
         {
@@ -534,14 +536,14 @@ public static class HyperVCommands
         var machineName = args[0];
         args.RemoveAt(0);
 
-        string ctrl = null;
+        string? ctrl = null;
         if (args.Count > 0)
         {
             ctrl = args[0];
             args.RemoveAt(0);
         }
 
-        string className = null;
+        string? className = null;
         if (args.Count > 0)
         {
             className = args[0];

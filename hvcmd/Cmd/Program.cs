@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -78,9 +80,9 @@ public static class Program
         Console.Error.WriteLine(ex.JoinMessages());
 #endif
 
-            if (ex is JobFailedException)
+            if (ex is JobFailedException jfex)
             {
-                exitcode = (ex as JobFailedException).ErrorCode;
+                exitcode = jfex.ErrorCode;
             }
             else
             {

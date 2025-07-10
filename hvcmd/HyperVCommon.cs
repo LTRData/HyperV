@@ -1,4 +1,10 @@
-﻿namespace LTR.HyperV;
+﻿#nullable enable
+
+using System;
+using System.ComponentModel;
+using System.Runtime.Serialization;
+
+namespace LTR.HyperV;
 
 public enum VMGeneration
 {
@@ -93,4 +99,18 @@ public enum JobState : ushort
     Killed = 9,
     Exception = 10,
     Service = 11
+}
+
+[Serializable]
+public class VirtualMachineNotFoundException : Exception
+{
+    public VirtualMachineNotFoundException() { }
+    
+    public VirtualMachineNotFoundException(string message) : base(message) { }
+    
+    public VirtualMachineNotFoundException(string message, Exception inner) : base(message, inner) { }
+
+    [Obsolete("Serialization not supported")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected VirtualMachineNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }
