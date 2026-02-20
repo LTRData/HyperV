@@ -77,7 +77,7 @@ public static class Program
 #if DEBUG
             Console.Error.WriteLine(ex.ToString());
 #else
-        Console.Error.WriteLine(ex.JoinMessages());
+            Console.Error.WriteLine(ex.JoinMessages());
 #endif
 
             if (ex is JobFailedException jfex)

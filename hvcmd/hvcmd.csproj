@@ -4,13 +4,13 @@
   <PropertyGroup>
     <RootNamespace>LTR.HyperV</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net45;net8.0;net9.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net8.0;net9.0;net10.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Deterministic>false</Deterministic>
     <Title>LTR.HyperV</Title>
     <Company>LTR Data</Company>
     <Product>LTR.HyperV</Product>
-    <Copyright>Copyright © Olof Lagerkvist, LTR Data 2012-2025</Copyright>
-    <Version>2.0.4</Version>
+    <Copyright>Copyright © Olof Lagerkvist, LTR Data 2012-2026</Copyright>
+    <Version>2.0.5</Version>
     <AssemblyVersion>2.0.*</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <PackageVersion>$(Version)</PackageVersion>

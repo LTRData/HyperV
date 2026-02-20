@@ -75,14 +75,10 @@ public static class HyperVSupportRoutines
         new(@$"{remoteMachine}\root\virtualization\v2");
 
     public static void SetPropertyValueIfExists<T>(this ManagementBaseObject obj, string propertyName, T value)
-    {
-        var prop = obj.Properties.OfType<PropertyData>().FirstOrDefault(pd => pd.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
-
-        if (prop != null)
-        {
-            prop.Value = value;
-        }
-    }
+        => obj.Properties
+            .OfType<PropertyData>()
+            .FirstOrDefault(pd => pd.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+            ?.Value = value;
 
     public static string EscapeManagementQueryString(string query)
     {
