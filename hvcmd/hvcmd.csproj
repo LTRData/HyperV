@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="5.*" Condition="'$(TargetFramework)' == 'net45'" />
-    <PackageReference Include="System.Management" Version="*" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Include="System.Management" Version="5.*" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" />
+    <PackageReference Include="System.Management" Version="*" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" />
   </ItemGroup>
 
 </Project>
